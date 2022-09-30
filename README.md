@@ -1,9 +1,4 @@
 # Olaf - The AVQA Application
-A web app project for real time question-answering on videos. The app can let users do the following :
-
-- Play and Pause videos
-- Take User's voice input (for asking question)
-- Returns the answer to the question in speech.
 
 # Steps to setup your application environment
 
