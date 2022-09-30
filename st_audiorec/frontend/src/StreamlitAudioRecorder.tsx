@@ -4,6 +4,7 @@ import {
   withStreamlitConnection,
 } from "streamlit-component-lib"
 import React, { ReactNode } from "react"
+import { useCallback, useEffect } from 'react';
 
 import AudioReactRecorder, { RecordState } from 'audio-react-recorder'
 import 'audio-react-recorder/dist/index.css'
@@ -42,10 +43,10 @@ class StAudioRec extends StreamlitComponentBase<State> {
     return (
       <span>
         <div>
-          <button id='record' onClick={this.onClick_start}>
+          <button id='record' onClick={this.onClick_start} accessKey="a">
             Click to Ask.
           </button>
-          <button id='stop' onClick={this.onClick_stop}>
+          <button id='stop' onClick={this.onClick_stop} accessKey="f">
             Fetch response.
           </button>
           {/* <button id='reset' onClick={this.onClick_reset}>
@@ -76,7 +77,6 @@ class StAudioRec extends StreamlitComponentBase<State> {
       </span>
     )
   }
-
 
   private onClick_start = () => {
     this.setState({

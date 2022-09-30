@@ -1,0 +1,9 @@
+olaf_env/
+.vscode
+olaf_dev/
+recorder.py
+st_audiorec/frontend/node_modules/
+st_audiorec/frontend/build/
+
+ffmeg_suite/
+st_audiorec/package-lock.json
