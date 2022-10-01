@@ -23,14 +23,17 @@ source ./olaf_dev/bin/activate
 pip3 install streamlit
 pip install streamlit-player
 ```
-
-# How to run your app.
-Once all the packages are installed, we can run the app using following command.
+# Build and install your st_audiorec frontend app
 ```
 cd st_audiorec/frontend
 npm install
 npm run build
 cd ../..
+```
+
+# How to run your app.
+Once all the packages are installed, we can run the app using following command.
+```
 streamlit run olaf.py
 ```
 
