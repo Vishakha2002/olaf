@@ -39,3 +39,10 @@ streamlit run olaf.py
 
 Update  `/Users/vtyagi/code/olaf/olaf_dev/lib/python3.6/site-packages/pafy/backend_youtube_dl.py` look for fixing the youtube download lib issue
 `self._dislikes = 0  #self._ydl_info['dislike_count']`
+
+
+Task I need help with for Frontend:
+- [] Video (Pause/Play) controls can be controlled by keybaord.
+- [] Ask Question buttom can be toggled from keybaord
+- [] Ask Question buttom toggle should start recording the audio as well as pause the youtube video
+- [] Fetch response button should be controlled by keybaord

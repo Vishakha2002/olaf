@@ -23,16 +23,23 @@ options = {
 yt_url = "https://www.youtube.com/watch?v=DwxmKKD8c3s"
 
 event = st_player(yt_url, **options)
-print(event.name)
+
 if event.name == "onPause":
     print("video got paused")
 if event.data:
-    # st.text(f"you paused the video at {event.data.get('playedSeconds')}")
-    print(event.data.values())
+    # print(event.name)
+    # Source https://github.com/cookpete/react-player#callback-props
+    # Callback containing played and loaded progress as a fraction, and playedSeconds and loadedSeconds in seconds
+    # eg { played: 0.12, playedSeconds: 11.3, loaded: 0.34, loadedSeconds: 16.7 }
+    # onDuration	
+    st.text(f"you paused the video at {event.data.get('playedSeconds')}")
+    # for k, v in event.data:
+    #     print(f"{k}  -  {v}")
+    # print(event.data.values())
 
+# Modified version if  https://github.com/stefanrmmr/streamlit_audio_recorder
 # Setup for st_audio
 parent_dir = os.path.dirname(os.path.abspath(__file__))
-print (parent_dir)
 build_dir = os.path.join(parent_dir, "st_audiorec/frontend/build")
 st_audiorec = components.declare_component("st_audiorec", path=build_dir)
 
