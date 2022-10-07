@@ -7,7 +7,6 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "strictNullChecks":false,
     "forceConsistentCasingInFileNames": true,
     "module": "esnext",
     "moduleResolution": "node",
@@ -16,6 +15,7 @@
     "noEmit": true,
     "jsx": "react",
     "noImplicitAny": false,
+    "typeRoots": ["./src"]
   },
-  "include": ["src"]
+  "include": ["src", "index.d.ts"]
 }

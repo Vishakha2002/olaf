@@ -4,6 +4,8 @@ olaf_dev/
 recorder.py
 st_audiorec/frontend/node_modules/
 st_audiorec/frontend/build/
-
+**/node_modules
+**/build
 ffmeg_suite/
 st_audiorec/package-lock.json
+.DS_Store
