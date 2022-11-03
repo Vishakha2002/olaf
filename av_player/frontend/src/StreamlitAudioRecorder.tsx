@@ -16,39 +16,42 @@ interface State {
 }
 
 class StAudioRec extends StreamlitComponentBase<State> {
-  // componentDidMount(): void {
 
-  // }
   public state = {
-    isFocused: false,
+    isFocused: true,
     recordState: null,
     audioDataURL: "",
-    reset: false,
+    reset: false
   };
 
   public render = (): ReactNode => {
+
+    // Arguments that are passed to the plugin in Python are accessible
+    // Streamlit sends us a theme object via props that we can use to ensure
+    // that our component has visuals that match the active theme in a
+    // streamlit app.
+
+    const { theme } = this.props;
+    const style: React.CSSProperties = {};
+
+    const { recordState } = this.state;
+
     const handleKeypress = (event: { key: string }) => {
       if (event.key === "a") {
         // start audio recording
         this.onClick_start();
       }
       if (event.key === "f") {
-        // stop audio recording
+        // stop audio recording and hide component as well
+        this.onClick_stop();
+      }
+      if (event.key === "p") {
+        // stop audio recording and hide component as well
         this.onClick_stop();
       }
     };
     window.removeEventListener("keypress", handleKeypress);
     window.addEventListener("keypress", handleKeypress);
-
-    // Arguments that are passed to the plugin in Python are accessible
-
-    // Streamlit sends us a theme object via props that we can use to ensure
-    // that our component has visuals that match the active theme in a
-    // streamlit app.
-    const { theme } = this.props;
-    const style: React.CSSProperties = {};
-
-    const { recordState } = this.state;
 
     // compatibility with older vers of Streamlit that don't send theme object.
     if (theme) {
@@ -76,7 +79,6 @@ class StAudioRec extends StreamlitComponentBase<State> {
               </button>
             </div>
           </div>
-
           <AudioReactRecorder
             state={recordState}
             onStop={this.onStop_audio}
@@ -86,18 +88,14 @@ class StAudioRec extends StreamlitComponentBase<State> {
             canvasWidth={450}
             canvasHeight={100}
           />
-
-          {/* <audio
-            id='audio'
-            controls
-            src={this.state.audioDataURL}
-          /> */}
         </div>
       </span>
     );
   };
 
   onClick_start = () => {
+    const audioElement = document.querySelectorAll<HTMLElement>('.audio-react-recorder');
+    audioElement[0].style.visibility = 'visible';
     this.setState({
       reset: false,
       audioDataURL: "",
@@ -110,7 +108,10 @@ class StAudioRec extends StreamlitComponentBase<State> {
     this.setState({
       reset: false,
       recordState: RecordState.STOP,
+      isFocused: false
     });
+    const audioElement = document.querySelectorAll<HTMLElement>('.audio-react-recorder');
+    audioElement[0].style.visibility = 'hidden';
   };
 
   private onStop_audio = (data) => {
