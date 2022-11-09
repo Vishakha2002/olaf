@@ -9,3 +9,9 @@ st_audiorec/frontend/build/
 ffmeg_suite/
 st_audiorec/package-lock.json
 .DS_Store
+olaf_3_7_9_env/
+__pycache__
+av_player/frontend/package-lock.json
+audio/
+audio-0.9.3.tar.gz
+sky_is_blue.wav
