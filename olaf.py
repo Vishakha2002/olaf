@@ -5,6 +5,8 @@ import streamlit as st
 import requests
 from io import BytesIO
 import numpy as np
+import whisper
+from pprint import pprint
 
 # try:
 #     if isinstance(video_event, dict):  # retrieve audio data
@@ -80,18 +82,43 @@ import numpy as np
 
 # except KeyError:
 #     print("\n")
+def whisper_transcription(audio_file):
+    model = whisper.load_model("base")
+    result = model.transcribe(audio_file)
+    pprint(result)
+    return result["text"]
 
 def transcribe_question(video_event, default="assemblyai"):
-    if default == "assemblyai":
-        time.sleep(3)
-        return "Not Implemented"
+    text = ""
+
+    ind, val = zip(*video_event['arr'].items())
+    ind = np.array(ind, dtype=int)  # convert to np array
+    val = np.array(val)             # convert to np array
+    sorted_ints = val[ind]
+    stream = BytesIO(b"".join([int(v).to_bytes(1, "big") for v in sorted_ints]))
+    # This wav_bytes has the audio
+    audio_file = "audio.wav"
+    wav_bytes = stream.read()
+    with open(audio_file, "wb") as binary_file:
+        binary_file.write(wav_bytes)
+    # audio = np.array(list(video_event['arr'].items()))
     
 
+    if default == "assemblyai":
+        time.sleep(3)
+        text = "Assembly AI Not Implemented"
+    elif default == "whisper":
+        # text = "Whisper Not Implemented"
+        text = whisper_transcription(audio_file)
+    else:
+        text = "Not Implemented"
+    return text    
+
 def parse_video_event(video_event):
-    # print(st.session_state.is_video_paused)
+    print(st.session_state.is_video_paused)
     if video_event and video_event.get('name') == "onPause":
             st.session_state.is_video_paused = True 
-            # print("video got paused")
+            print("video got paused")
     if video_event and video_event.get('name') == "onProgress":
         # print("Inside onProgres")
         if video_event.get('data') and isinstance(video_event.get('data'), dict):
@@ -105,6 +132,10 @@ def parse_video_event(video_event):
 
 
 def initialize_session_state():
+    """
+    This method sets the variables required for olaf to work in
+    streamlit session state.
+    """
     if "is_video_paused" not in st.session_state:
         st.session_state['is_video_paused'] = False
     if "frame_stopped_at" not in st.session_state:   
@@ -112,6 +143,9 @@ def initialize_session_state():
 
 
 def main():
+    """
+    Olaf main application script.
+    """
     initialize_session_state()
 
     st.set_page_config(
@@ -146,6 +180,7 @@ def main():
         if "arr" in video_event.keys():
             with st.spinner('Transcribing Question...'):
                 transcription = transcribe_question(video_event)
+                # transcription = transcribe_question(video_event, default="whisper")
                 placeholder.text(transcription)
 
 
