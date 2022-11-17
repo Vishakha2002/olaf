@@ -8,80 +8,7 @@ import numpy as np
 import whisper
 from pprint import pprint
 
-# try:
-#     if isinstance(video_event, dict):  # retrieve audio data
-#         if "arr" in video_event.keys():
-#             with st.spinner('Transcribing audio-recording...'):
-#                 placeholder.text('Question recevieved ...')
-#                 ind, val = zip(*video_event['arr'].items())
-#                 ind = np.array(ind, dtype=int)  # convert to np array
-#                 val = np.array(val)             # convert to np array
-#                 sorted_ints = val[ind]
-#                 stream = BytesIO(b"".join([int(v).to_bytes(1, "big") for v in sorted_ints]))
-#                 # This wav_bytes has the audio
-#                 wav_bytes = stream.read()
-#                 print(type(wav_bytes))
 
-#                 if 'status' not in st.session_state:
-#                     st.session_state['status'] = 'submitted'
-
-#                 CHUNK_SIZE= 5242880
-#                 upload_endpoint = "https://api.assemblyai.com/v2/upload"
-#                 transcript_endpoint = "https://api.assemblyai.com/v2/transcript"
-
-#                 headers = {
-#                     "authorization":"34e0f41f2b84459db61bb5da43686224",
-#                     "contect-type": "application/json"
-#                 }
-
-#                 def read_file(filename):
-#                     with open(filename, 'rb') as _file:
-#                         while True:
-#                             data = _file.read(CHUNK_SIZE)
-#                             if not data:
-#                                 break
-#                             yield data
-
-#                 def start_transcription():
-#                     # upload_response = requests.post(
-#                     #     upload_endpoint,
-#                     #     headers=headers, data=read_file(audio_file)
-#                     # )
-#                     upload_response = requests.post(
-#                         upload_endpoint,
-#                         headers=headers, data=wav_bytes
-#                     )
-#                     audio_url = upload_response.json()['upload_url']
-#                     print(f"Uploaded to {audio_url}")
-
-#                     transcript_request = {
-#                         'audio_url': audio_url,
-#                         'iab_categories': 'False',
-#                     }
-#                     transcript_response = requests.post(transcript_endpoint, json=transcript_request, headers=headers)
-
-#                     transcript_id = transcript_response.json()['id']
-#                     polling_endpoint = transcript_endpoint + "/" + transcript_id
-#                     return polling_endpoint
-
-#                 polling_endpoint = start_transcription()
-#                 transcript = None
-#                 while st.session_state['status'] != 'completed':
-#                     polling_response = requests.get(polling_endpoint, headers=headers)
-#                     st.session_state['status'] = polling_response.json()['status']
-#                     # print(f"polling status {polling_response.json()['status']}")
-#                     transcript = polling_response.json()['text']
-
-#                 placeholder.text('Your Question -')
-#                 st.markdown(transcript)
-#                 st.session_state['status'] = "submitted"
-#                 # transcript = "This is a test"
-#                 # placeholder.text('Your Question -')
-#                 # st.markdown(transcript)
-#                 # st.session_state['status'] = "submitted"
-
-# except KeyError:
-#     print("\n")
 def whisper_transcription(audio_file):
     model = whisper.load_model("base")
     result = model.transcribe(audio_file)
@@ -90,6 +17,7 @@ def whisper_transcription(audio_file):
 
 def transcribe_question(video_event, default="assemblyai"):
     text = ""
+    audio_file = "audio.wav"
 
     ind, val = zip(*video_event['arr'].items())
     ind = np.array(ind, dtype=int)  # convert to np array
@@ -97,7 +25,7 @@ def transcribe_question(video_event, default="assemblyai"):
     sorted_ints = val[ind]
     stream = BytesIO(b"".join([int(v).to_bytes(1, "big") for v in sorted_ints]))
     # This wav_bytes has the audio
-    audio_file = "audio.wav"
+
     wav_bytes = stream.read()
     with open(audio_file, "wb") as binary_file:
         binary_file.write(wav_bytes)
@@ -179,8 +107,8 @@ def main():
     if isinstance(video_event, dict):  # retrieve audio data
         if "arr" in video_event.keys():
             with st.spinner('Transcribing Question...'):
-                transcription = transcribe_question(video_event)
-                # transcription = transcribe_question(video_event, default="whisper")
+                # transcription = transcribe_question(video_event)
+                transcription = transcribe_question(video_event, default="whisper")
                 placeholder.text(transcription)
 
 
