@@ -7,22 +7,24 @@ A web app project for real time question-answering on videos. The app can let us
 
 # Steps to setup your application environment
 
-## Create a new Virtual environment
-```
-python3 -m venv olaf_dev
-```
 
-## Activate your virtual environment
-```
-source ./olaf_dev/bin/activate
-```
+## Install docker on your host
+Follow instruction on https://docs.docker.com/desktop/install/mac-install/
 
-## Install packages
-> **_NOTE:_** It is currently work in progress. Hence its not a complete/exhaustive list of packages required by Olaf app.
-```
-pip3 install streamlit
-```
-<!-- pip install streamlit-player -->
+## Clone the repo once.
+`git clone https://github.com/Vishakha2002/olaf.git`
+
+## move into the olaf directory
+`cd olaf/`
+
+## Build your docker image
+`docker build -t olaf_app .`
+
+## Run your docker image
+`docker run -p 8501:8501 olaf_app`
+
+You would have application running on your localhost.
+
 
 ### Install Whisper dependecies
 The codebase also depends on a few Python packages, most notably [HuggingFace Transformers](https://huggingface.co/docs/transformers/index) for their fast tokenizer implementation and [ffmpeg-python](https://github.com/kkroening/ffmpeg-python) for reading audio files. The following command will pull and install the latest commit from this repository, along with its Python dependencies 
@@ -60,20 +62,6 @@ pip3 install
 ffmpeg-python==0.2.0
 ```
 
-
-# Build and install your st_audiorec frontend app
-```
-cd st_audiorec/frontend
-npm install
-npm run build
-cd ../..
-```
-
-# How to run your app.
-Once all the packages are installed, we can run the app using following command.
-```
-streamlit run olaf.py
-```
 
 # Notes
 
