@@ -59,3 +59,4 @@ urllib3==1.26.12
 validators==0.20.0
 whisper==1.0
 zipp==3.10.0
+torchvision==0.14.0

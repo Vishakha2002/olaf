@@ -30,12 +30,15 @@ RUN git clone https://github.com/Vishakha2002/olaf.git .
 # Set application working directory
 WORKDIR /app/av_player/frontend
 RUN npm install && npm run build
+RUN sed -i 's/\/*# sourceMappingURL=bootstrap.min.css.map *\///' public/bootstrap.min.css
 
 # Back to main app directory
 WORKDIR /app
 
 # Install all the python requirements
 RUN pip3 install -r requirements.txt
+RUN pip3 uninstall -y whisper
+RUN pip3 install git+https://github.com/openai/whisper.git
 
 # run the application
 ENTRYPOINT ["streamlit", "run", "olaf.py", "--server.port=8501", "--server.address=0.0.0.0"]
