@@ -214,5 +214,44 @@ def main():
                 placeholder.text(transcription)
 
 
+def setup_directory() -> None:
+    """
+    Before you begin setup data directories
+    data/raw_audio      : Path for extracted Audio from the youtube video
+    data/raw_video      : Path for downloaded Video from youtube
+    data/frames/audio
+    data/frames/video   :  Path for extracted frames from video 
+    data/features/audio
+    data/features/video
+    data/user_question  : Path to store user question audio
+    """
+    if not os.path.exists("data/raw_audio"):
+        os.makedirs("data/raw_audio")
+    if not os.path.exists("data/raw_video"):
+        os.makedirs("data/raw_video")
+    if not os.path.exists("data/user_question"):
+        os.makedirs("data/user_question")
+
+    if not os.path.exists("data/frames"):
+        os.makedirs("data/frames")
+    if not os.path.exists("data/frames/audio"):
+        os.makedirs("data/frames/audio")
+    if not os.path.exists("data/frames/video"):
+        os.makedirs("data/frames/video")
+
+    if not os.path.exists("data/features"):
+        os.makedirs("data/features")
+    if not os.path.exists("data/features/audio"):
+        os.makedirs("data/features/audio")
+    if not os.path.exists("data/features/video"):
+        os.makedirs("data/features/video")
+
+
+
 if __name__ == "__main__":
+    setup_directory()
+    
+
+
+    
     main()
