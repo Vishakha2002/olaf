@@ -82,6 +82,42 @@ def initialize_session_state():
 
 
 def extract_audio_features():
+    """
+    VGGish:
+    The initial AudioSet release included 128-dimensional embeddings of each
+    AudioSet segment produced from a VGG-like audio classification model that was
+    trained on a large YouTube dataset.
+    We provide a TensorFlow definition of this model, which we call VGGish, as
+    well as supporting code to extract input features for the model from audio
+    waveforms and to post-process the model embedding output into the same format as
+    the released embedding features. 
+    
+    VGGish can be used in two ways:
+
+    As a feature extractor: VGGish converts audio input features into a
+    semantically meaningful, high-level 128-D embedding which can be fed as input
+    to a downstream classification model. The downstream model can be shallower
+    than usual because the VGGish embedding is more semantically compact than raw
+    audio features.
+    So, for example, you could train a classifier for 10 of the AudioSet classes
+    by using the released embeddings as features.  Then, you could use that
+    trained classifier with any arbitrary audio input by running the audio through
+    the audio feature extractor and VGGish model provided here, passing the
+    resulting embedding features as input to your trained model.
+    vggish_inference_demo.py shows how to produce VGGish embeddings from
+    arbitrary audio.
+
+
+    As part of a larger model: Here, we treat VGGish as a "warm start" for the
+    lower layers of a model that takes audio features as input and adds more
+    layers on top of the VGGish embedding. This can be used to fine-tune VGGish
+    (or parts thereof) if you have large datasets that might be very different
+    from the typical YouTube video clip. vggish_train_demo.py shows how to add
+    layers on top of VGGish and train the whole model.
+
+    Source:
+    https://git.dst.etit.tu-chemnitz.de/external/tf-models/-/tree/1d057dfc32f515a63ab1e23fd72052ab2a954952/research/audioset/vggish
+    """
     pass
 
 
