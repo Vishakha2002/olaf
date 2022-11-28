@@ -113,7 +113,7 @@ def extract_frames(video, dst):
     return
 
 
-def preprocess_youtube_video(yt_url):
+def preprocess_youtube_video(yt_url, frontend_dev):
     """
     To take user input it is import to preprocess the video. Steps:
     1. Download youtube video  (720p resoultion / mp4 format) and save it in data/raw_video
@@ -121,6 +121,7 @@ def preprocess_youtube_video(yt_url):
     3. Extract frames from video using ffmeg
     
     """
+    saved_audio = None
     if yt_url in st.session_state:
         return
     video_object = YouTube(yt_url)
@@ -137,23 +138,25 @@ def preprocess_youtube_video(yt_url):
             # start video download
             saved_video = video_object.streams.filter(mime_type="video/mp4", res="720p").first().download(filename=video_filename, output_path="data/raw_video")
             st.write(f"Downloaded video at {saved_video}")
-            # Extract Audio from the saved video
-            saved_audio = get_audio_wav(audio_filename=audio_filename, video_path=saved_video)
-            st.write(f"Extracted Audio saved at {saved_audio}")
 
-            # Here we will extract frames from the saved video file
-            try:
-                if not os.path.exists(video_frame_path):
-                    print(f"Creating a new folder for extracting video frames {video_frame_path}")
-                    os.makedirs(video_frame_path)
-                frame_count = len(os.listdir(video_frame_path))
-                if frame_count == 0:
-                    extract_frames(saved_video, video_frame_path)
+            if not frontend_dev:
+                # Extract Audio from the saved video
+                saved_audio = get_audio_wav(audio_filename=audio_filename, video_path=saved_video)
+                st.write(f"Extracted Audio saved at {saved_audio}")
+
+                # Here we will extract frames from the saved video file
+                try:
+                    if not os.path.exists(video_frame_path):
+                        print(f"Creating a new folder for extracting video frames {video_frame_path}")
+                        os.makedirs(video_frame_path)
                     frame_count = len(os.listdir(video_frame_path))
-                st.write(f"Extracted Video frames saved at {video_frame_path}. Count: {frame_count}")
-                extracted_frames = True
-            except Exception:
-                raise
+                    if frame_count == 0:
+                        extract_frames(saved_video, video_frame_path)
+                        frame_count = len(os.listdir(video_frame_path))
+                    st.write(f"Extracted Video frames saved at {video_frame_path}. Count: {frame_count}")
+                    extracted_frames = True
+                except Exception:
+                    raise
     
         st.session_state[yt_url] = {
             "raw_audio": saved_audio,
@@ -166,7 +169,7 @@ def preprocess_youtube_video(yt_url):
         time.sleep(5)
 
 
-def main():
+def main(frontend_dev):
     """
     Olaf main application script.
     """
@@ -191,10 +194,12 @@ def main():
     yt_urls = ["https://www.youtube.com/watch?v=6gQ7m0c4ReI","https://youtu.be/is68rlOzEio", "https://www.youtube.com/watch?v=nK1r_9hPWuI"]
     yt_url = st.selectbox("Please select a video to be play", options=yt_urls)
 
-    preprocess_youtube_video(yt_url)
+    preprocess_youtube_video(yt_url, frontend_dev)
     # pprint(st.session_state.get(yt_url))
 
     # video_uri = st.session_state[yt_url].get('raw_video')
+    if frontend_dev:
+        st.write(f"Here the vide is saved at {st.session_state[yt_url]['raw_video']}")
     
 
     av_player_parent_dir = os.path.dirname(os.path.abspath(__file__))
@@ -209,9 +214,11 @@ def main():
     if isinstance(video_event, dict):  # retrieve audio data
         if "arr" in video_event.keys():
             with st.spinner('Transcribing Question...'):
-                # transcription = transcribe_question(video_event)
-                transcription = transcribe_question(video_event, default="whisper")
-                placeholder.text(transcription)
+                if not frontend_dev:
+                    transcription = transcribe_question(video_event, default="whisper")
+                    placeholder.text(transcription)
+                else:
+                     placeholder.text("Testing Frontend code")
 
 
 def setup_directory() -> None:
@@ -249,9 +256,5 @@ def setup_directory() -> None:
 
 
 if __name__ == "__main__":
-    setup_directory()
-    
-
-
-    
-    main()
+    setup_directory()    
+    main(frontend_dev=True)

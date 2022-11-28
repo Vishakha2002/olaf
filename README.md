@@ -5,6 +5,21 @@ A web app project for real time question-answering on videos. The app can let us
 - Take User's voice input (for asking question)
 - Returns the answer to the question in speech.
 
+
+# [Frontend Branch only] Manual steps to setup Olaf
+
+Requirements:
+Python 3.7+
+`git clone https://github.com/Vishakha2002/olaf.git`
+`cd olaf`
+`python3 -m venv olaf_dev`
+`source olaf_dev/bin/activate`
+`pip3 install -r requirements.txt`
+`streamlit run olaf.py`
+
+Note: If tourch fails that is okay for frontend dev
+
+
 # Steps to setup your application environment in linux
 Follow docker steps manually for now.
 
