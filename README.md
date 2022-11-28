@@ -10,12 +10,14 @@ A web app project for real time question-answering on videos. The app can let us
 
 Requirements:
 Python 3.7+
-`git clone https://github.com/Vishakha2002/olaf.git`
-`cd olaf`
-`python3 -m venv olaf_dev`
-`source olaf_dev/bin/activate`
-`pip3 install -r requirements.txt`
-`streamlit run olaf.py`
+```
+git clone https://github.com/Vishakha2002/olaf.git
+cd olaf
+python3 -m venv olaf_dev
+source olaf_dev/bin/activate
+pip3 install -r requirements.txt
+streamlit run olaf.py
+```
 
 Note: If tourch fails that is okay for frontend dev
 
