@@ -70,3 +70,27 @@ Update  `/Users/vtyagi/code/olaf/olaf_dev/lib/python3.6/site-packages/pafy/backe
 `self._dislikes = 0  #self._ydl_info['dislike_count']`
 
 If you need to disable bootstrap.css.map error use https://stackoverflow.com/questions/21773376/bootstrap-trying-to-load-map-file-how-to-disable-it-do-i-need-to-do-it
+
+
+### Untar a file
+tar -xvf archive.tar.gz
+### Tar a file
+
+### Pip install flag to without cache
+--no-cache-dir 
+
+### fix for urllib.error.URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1091)>
+(olaf_3_7_9_env) vtyagi@Vishakhas-MacBook-Pro olaf % open /Applications/Python\ 3.7/Install\ Certificates.command
+
+### ssl proxy 
+https://github.com/suyashkumar/ssl-proxy
+
+
+## Data Directory Structure
+data/raw_audio : Path for extracted Audio from the youtube video
+data/raw_video : Path for downloaded Video from youtube
+data/frames/audio
+data/frames/video :  Path for extracted frames from video 
+data/features/audio
+data/features/video
+data/user_question
