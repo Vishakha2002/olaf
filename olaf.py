@@ -264,7 +264,7 @@ def setup_directory() -> None:
     data/raw_video      : Path for downloaded Video from youtube
     data/frames/audio
     data/frames/video   :  Path for extracted frames from video 
-    data/features/audio
+    data/features/audio_vggish
     data/features/video
     data/user_question  : Path to store user question audio
     """
@@ -284,8 +284,8 @@ def setup_directory() -> None:
 
     if not os.path.exists("data/features"):
         os.makedirs("data/features")
-    if not os.path.exists("data/features/audio"):
-        os.makedirs("data/features/audio")
+    if not os.path.exists("data/features/audio_vggish"):
+        os.makedirs("data/features/audio_vggish")
     if not os.path.exists("data/features/video"):
         os.makedirs("data/features/video")
 
