@@ -5,9 +5,10 @@ A web app project for real time question-answering on videos. The app can let us
 - Take User's voice input (for asking question)
 - Returns the answer to the question in speech.
 
-# Steps to setup your application environment
+# Steps to setup your application environment in linux
+Follow docker steps manually for now.
 
-
+# Docker installation steps:
 ## Install docker on your host
 Follow instruction on https://docs.docker.com/desktop/install/mac-install/
 

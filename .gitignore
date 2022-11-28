@@ -15,3 +15,8 @@ av_player/frontend/package-lock.json
 audio/
 audio-0.9.3.tar.gz
 sky_is_blue.wav
+*.pem
+audio.wav
+ssl-proxy-darwin-amd64
+run.py
+packages.txt

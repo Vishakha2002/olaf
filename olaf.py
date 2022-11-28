@@ -1,7 +1,11 @@
+"""
+https://github.com/suyashkumar/ssl-proxy If you need reverse proxy in front of streamlit server
+"""
 import os
 import time
 import streamlit.components.v1 as components
 import streamlit as st
+import subprocess
 import requests
 from io import BytesIO
 import numpy as np
@@ -92,8 +96,9 @@ def main():
     }
 
     # XXX Take user input instead of harcoding.
-    # yt_url = "https://www.youtube.com/watch?v=bmIVWe3Cux8&iv_load_policy=3"
-    yt_url = "https://www.youtube.com/watch?v=nK1r_9hPWuI"
+    yt_urls = ["https://www.youtube.com/watch?v=6gQ7m0c4ReI","https://youtu.be/is68rlOzEio", "https://www.youtube.com/watch?v=nK1r_9hPWuI"]
+    yt_url = st.selectbox("Please select a video to be play", options=yt_urls)
+
 
     av_player_parent_dir = os.path.dirname(os.path.abspath(__file__))
     av_player_build_dir = os.path.join(av_player_parent_dir, "av_player/frontend/build")
