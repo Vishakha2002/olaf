@@ -257,4 +257,4 @@ def setup_directory() -> None:
 
 if __name__ == "__main__":
     setup_directory()    
-    main(frontend_dev=True)
+    main(frontend_dev=False)
