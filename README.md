@@ -111,3 +111,7 @@ data/frames/video :  Path for extracted frames from video
 data/features/audio
 data/features/video
 data/user_question
+
+# tunnel to agave compute host
+% ssh vtyagi14@agave.asu.edu -L 8501:cg28-2.agave.rc.asu.edu:850
+ssh vtyagi14@agave.asu.edu -L 8501:agave.asu.edu:8501
