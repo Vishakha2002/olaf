@@ -16,6 +16,7 @@ from pytube import YouTube
 from moviepy.editor import VideoFileClip
 
 from  audio_feature.extract_audio_vggish_feat import generate_audio_vggish_features
+from video_feature.extract_resnet18_14x14 import extract_video_feature
 
 
 # This we are doing for vggish
@@ -179,6 +180,8 @@ def preprocess_youtube_video(yt_url, frontend_dev):
     1. Download youtube video  (720p resoultion / mp4 format) and save it in data/raw_video
     2. Extract audio (.wav) from the downloaded video and save it in data/raw_audio
     3. Extract frames from video using ffmeg
+    4. Run VGGish
+    5. Run Resnet18
     
     """
     saved_audio = None
@@ -217,6 +220,7 @@ def preprocess_youtube_video(yt_url, frontend_dev):
                     extracted_frames = True
 
                     vggish_audio_feature_file_path = generate_audio_vggish_features(saved_audio)
+                    resnet_video_feature_file_path = extract_video_feature(video_frame_path)
                 except Exception:
                     raise
     
@@ -224,8 +228,9 @@ def preprocess_youtube_video(yt_url, frontend_dev):
             "raw_audio": saved_audio,
             "raw_video": saved_video,
             "video_frame_path": video_frame_path,
+            "vggish_audio_feature_file_path": os.path.join(os.getcwd(), vggish_audio_feature_file_path),
+            "resnet_video_feature_file_path": os.path.join(os.getcwd(),resnet_video_feature_file_path),
             "extracted_frames": extracted_frames,
-            "vggish_audio_feature_file_path": os.path.join(os.getcwd(), vggish_audio_feature_file_path)
         }
         st.success('Pre processing Done!')
         st.write(st.session_state[yt_url])

@@ -35,10 +35,9 @@ def load_frame_info(img_path):
     return frame_tensor
 
 
-def extract_feats(model, filename, load_image_fn):
+def extract_feats(model, framepath, load_image_fn):
     C, H, W = 3, 224, 224
-    raw_name = filename.split('/')[-1]
-    raw_name = raw_name.split(".")[0]
+    raw_name = framepath.split('/')[-1]
 
     model.eval()
     output_directory = os.path.join(os.getcwd(), "data/features/video")
@@ -78,7 +77,7 @@ def extract_feats(model, filename, load_image_fn):
     return outfile
 
 
-def extract_video_feature(filename):
+def extract_video_feature(framepath):
     os.environ['CUDA_VISIBLE_DEVICES'] = "0, 1"
     
     pretrained_resnet_model = pretrainedmodels.resnet18(pretrained='imagenet')
@@ -88,4 +87,5 @@ def extract_video_feature(filename):
     model = nn.DataParallel(model)
     model = model.cuda()
 
-    extract_feats(model, filename, load_image_fn)
+    file_path = extract_feats(model, framepath, load_image_fn)
+    return file_path
