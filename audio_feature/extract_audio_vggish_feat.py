@@ -24,8 +24,6 @@ def get_audio_len(audio_file):
         return wav_length
 
 
-
-
 def generate_audio_vggish_features(filename):
     # Paths to downloaded VGGish files.
     checkpoint_path = 'vggish_model.ckpt'
@@ -42,7 +40,7 @@ def generate_audio_vggish_features(filename):
 
     outfile = os.path.join(save_dir, raw_name + '.npy')
     if os.path.exists(outfile):
-        print(f" {outfile} is already exist! ")
+        print(f" {outfile} already exist! ")
         return outfile
 
     '''feature learning by VGG-net trained by audioset'''
