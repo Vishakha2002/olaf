@@ -4,9 +4,9 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "1" # set gpu number
 import numpy as np
 import tensorflow as tf
 
-import vggish_input
-import vggish_params
-import vggish_slim
+from . import vggish_input
+from . import vggish_params
+from . import vggish_slim
 import contextlib
 import wave
 import streamlit as st
