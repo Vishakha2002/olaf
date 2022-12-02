@@ -15,7 +15,7 @@ from pprint import pprint
 from pytube import YouTube
 from moviepy.editor import VideoFileClip
 
-from  extract_audio_vggish_feat import generate_audio_vggish_features
+from  audio_feature.extract_audio_vggish_feat import generate_audio_vggish_features
 
 
 # This we are doing for vggish
