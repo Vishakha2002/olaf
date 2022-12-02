@@ -7,6 +7,7 @@ import os
 import time
 import streamlit.components.v1 as components
 import streamlit as st
+import subprocess
 
 from io import BytesIO
 import numpy as np
@@ -162,15 +163,18 @@ def get_audio_wav(audio_filename, video_path) -> str:
 
 
 def extract_frames(video, dst):
+
     command1 = 'ffmpeg '
     command1 += '-i ' + video + " "
     command1 += '-y' + " "
     command1 += "-r " + "1 "
     command1 += '{0}/%06d.jpg'.format(dst)
-    print(command1)
-    #    print command1
-    os.system(command1)
 
+    print(command1)
+    command_list = command1.split(" ")
+    #    print command1
+    # os.system(command1)
+    subprocess.run(command_list, shell=True, check=True)
     return
 
 
@@ -320,6 +324,9 @@ def setup_directory() -> None:
         os.makedirs("data/features/audio_vggish")
     if not os.path.exists("data/features/video_resnet18"):
         os.makedirs("data/features/video_resnet18")
+    if not os.path.exists("data/pretrained"):
+        os.makedirs("data/pretrained")
+        
 
 
 
