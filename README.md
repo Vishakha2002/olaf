@@ -118,3 +118,10 @@ ssh vtyagi14@agave.asu.edu -L 8501:agave.asu.edu:8501
 
 
 https://stackoverflow.com/questions/47068709/your-cpu-supports-instructions-that-this-tensorflow-binary-was-not-compiled-to-u
+
+# To download ffmpeg and deploy without root
+download `i686-static` from https://www.johnvansickle.com/ffmpeg/
+then extract it using 
+`tar xvf ffmpeg-git-i686-static.tar.xz`
+Finally add it to the os path
+`export PATH=/home/vishakha/olaf/ffmpeg-git-20220910-i686-static:$PATH`
