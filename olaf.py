@@ -1,20 +1,29 @@
 """
 https://github.com/suyashkumar/ssl-proxy If you need reverse proxy in front of streamlit server
 """
-from fileinput import filename
+
 import re
 import os
 import time
 import streamlit.components.v1 as components
 import streamlit as st
-import subprocess
-import requests
+
 from io import BytesIO
 import numpy as np
 import whisper
 from pprint import pprint
 from pytube import YouTube
 from moviepy.editor import VideoFileClip
+
+from  extract_audio_vggish_feat import generate_audio_vggish_features
+
+
+# This we are doing for vggish
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ["CUDA_VISIBLE_DEVICES"] = "1" # set gpu number
+
+
+
 
 
 def whisper_transcription(audio_file):
@@ -117,6 +126,21 @@ def extract_audio_features():
 
     Source:
     https://git.dst.etit.tu-chemnitz.de/external/tf-models/-/tree/1d057dfc32f515a63ab1e23fd72052ab2a954952/research/audioset/vggish
+
+    Tutorial https://www.youtube.com/watch?v=PYlr8ayHb4g
+    Vishakha - Do we even need to do this?
+    https://colab.research.google.com/drive/1TbX92UL9sYWbdwdGE0rJ9owmezB-Rl1C?usp=sharing
+
+    Pre-requisite
+    !curl -O https://storage.googleapis.com/audioset/vggish_model.ckpt
+    !curl -O https://storage.googleapis.com/audioset/vggish_pca_params.npz
+
+    we are going to download them in 
+    $ ls
+    models/
+    vggish_model.ckpt
+    vggish_pca_params.npz
+    
     """
     pass
 
@@ -191,6 +215,8 @@ def preprocess_youtube_video(yt_url, frontend_dev):
                         frame_count = len(os.listdir(video_frame_path))
                     st.write(f"Extracted Video frames saved at {video_frame_path}. Count: {frame_count}")
                     extracted_frames = True
+
+                    generate_audio_vggish_features(saved_audio)
                 except Exception:
                     raise
     

@@ -38,6 +38,10 @@ Inputs:
 Question format:
 
 """
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ["CUDA_VISIBLE_DEVICES"] = "1" # set gpu number
+
 import ast
 import json
 import torch
@@ -81,8 +85,10 @@ class OlafInput(Dataset):
         # Max question length
         self.max_question_len = 14
 
-        self.audio_vggish_features_dir = audio_vggish_features_dir
-        self.video_res14x14_dir = video_res14x14_dir
+        # why do we need this?
+        # self.audio_vggish_features_dir = audio_vggish_features_dir
+        # why do we need this?
+        # self.video_res14x14_dir = video_res14x14_dir
 
         self.video_ids = {sample['video_id'] for sample in self.samples}
         self.total_sample_video_count = 60 * len(self.video_ids)
@@ -99,7 +105,13 @@ class OlafInput(Dataset):
 
             sample = self.samples[idx]
             name = sample['video_id']
+            # This is comming from vggish outout
+            # audio = np.load(os.path.join(self.audio_dir, name + '.npy'))
 
+        def make_sample(self):
+            pass
+            
+                        
         def build_vocab(self) -> None:
             """
             Read AVQA JSON training to build question and answer vocab for our model.

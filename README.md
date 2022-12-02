@@ -115,3 +115,6 @@ data/user_question
 # tunnel to agave compute host
 % ssh vtyagi14@agave.asu.edu -L 8501:cg28-2.agave.rc.asu.edu:850
 ssh vtyagi14@agave.asu.edu -L 8501:agave.asu.edu:8501
+
+
+https://stackoverflow.com/questions/47068709/your-cpu-supports-instructions-that-this-tensorflow-binary-was-not-compiled-to-u
