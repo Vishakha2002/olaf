@@ -83,6 +83,7 @@ tensorflow==2.11.0
 tensorflow-estimator==2.11.0
 tensorflow-io-gcs-filesystem==0.28.0
 termcolor==2.1.1
+tf-slim==1.1.0
 tokenizers==0.12.1
 toml==0.10.2
 toolz==0.12.0
@@ -97,5 +98,6 @@ tzlocal==4.2
 urllib3==1.26.12
 validators==0.20.0
 Werkzeug==2.2.2
+whisper @ git+https://github.com/openai/whisper.git@eff383b27b783e280c089475852ba83f20f64998
 wrapt==1.14.1
 zipp==3.10.0

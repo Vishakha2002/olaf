@@ -38,12 +38,12 @@ def generate_audio_vggish_features(filename):
     raw_name = filename.split('/')[-1]
     raw_name = raw_name.split(".")[0]
 
-    st.write(f"Keshav raw file name {raw_name}")
+    st.write(f"Vishakha raw file name {raw_name}")
 
     outfile = os.path.join(save_dir, raw_name + '.npy')
     if os.path.exists(outfile):
         print(f" {outfile} is already exist! ")
-        return
+        return outfile
 
     '''feature learning by VGG-net trained by audioset'''
     audio_index = os.path.join(audio_dir, filename) # path of your audio files
