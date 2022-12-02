@@ -7,7 +7,6 @@ import os
 import time
 import streamlit.components.v1 as components
 import streamlit as st
-import subprocess
 
 from io import BytesIO
 import numpy as np
@@ -171,10 +170,12 @@ def extract_frames(video, dst):
     command1 += '{0}/%06d.jpg'.format(dst)
 
     print(command1)
-    command_list = command1.split(" ")
-    #    print command1
-    # os.system(command1)
-    subprocess.run(command_list, shell=True, check=True)
+
+    exit_code = os.system(command1)
+
+    if exit_code != 0:
+        raise Exception("Not able to run ffmpeg")
+
     return
 
 
