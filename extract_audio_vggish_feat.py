@@ -69,3 +69,4 @@ def generate_audio_vggish_features(filename):
 
         np.save(outfile, embedding_batch)
         print(f" save info: {outfile} ---> {embedding_batch.shape}" )
+        return outfile

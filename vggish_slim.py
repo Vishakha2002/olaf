@@ -33,7 +33,7 @@ https://github.com/tensorflow/models/blob/master/research/slim/nets/vgg.py
 import tensorflow as tf
 import vggish_params as params
 
-slim = tf.contrib.slim
+import tf_slim as slim
 
 
 def define_vggish_slim(training=False):

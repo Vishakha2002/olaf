@@ -216,7 +216,7 @@ def preprocess_youtube_video(yt_url, frontend_dev):
                     st.write(f"Extracted Video frames saved at {video_frame_path}. Count: {frame_count}")
                     extracted_frames = True
 
-                    generate_audio_vggish_features(saved_audio)
+                    vggish_audio_feature_file_path = generate_audio_vggish_features(saved_audio)
                 except Exception:
                     raise
     
@@ -224,7 +224,8 @@ def preprocess_youtube_video(yt_url, frontend_dev):
             "raw_audio": saved_audio,
             "raw_video": saved_video,
             "video_frame_path": video_frame_path,
-            'extracted_frames': extracted_frames
+            "extracted_frames": extracted_frames,
+            "vggish_audio_feature_file_path": os.path.join(os.getcwd(), vggish_audio_feature_file_path)
         }
         st.success('Pre processing Done!')
         st.write(st.session_state[yt_url])
