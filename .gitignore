@@ -20,3 +20,4 @@ audio.wav
 ssl-proxy-darwin-amd64
 run.py
 packages.txt
+**/data
