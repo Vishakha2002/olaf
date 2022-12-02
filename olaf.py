@@ -318,8 +318,8 @@ def setup_directory() -> None:
         os.makedirs("data/features")
     if not os.path.exists("data/features/audio_vggish"):
         os.makedirs("data/features/audio_vggish")
-    if not os.path.exists("data/features/video"):
-        os.makedirs("data/features/video")
+    if not os.path.exists("data/features/video_resnet18"):
+        os.makedirs("data/features/video_resnet18")
 
 
 

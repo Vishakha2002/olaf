@@ -40,7 +40,7 @@ def extract_feats(model, framepath, load_image_fn):
     raw_name = framepath.split('/')[-1]
 
     model.eval()
-    output_directory = os.path.join(os.getcwd(), "data/features/video")
+    output_directory = os.path.join(os.getcwd(), "data/features/video_resnet18")
     if not os.path.isdir(output_directory):
         os.mkdir(output_directory)
 
