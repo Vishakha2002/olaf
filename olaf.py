@@ -37,7 +37,7 @@ def whisper_transcription(audio_file):
 def transcribe_question(video_event, default="assemblyai"):
     text = ""
     # XXX Vishakha move this to a temp file.
-    audio_file = "question_audio.wav"
+    audio_file = "data/user_question/question_audio.wav"
 
     ind, val = zip(*video_event['arr'].items())
     ind = np.array(ind, dtype=int)  # convert to np array
@@ -230,6 +230,7 @@ def preprocess_youtube_video(yt_url, frontend_dev):
                     raise
     
         st.session_state[yt_url] = {
+            "video_title": video_title,
             "raw_audio": saved_audio,
             "raw_video": saved_video,
             "video_frame_path": video_frame_path,
@@ -301,8 +302,8 @@ def setup_directory() -> None:
     data/raw_video      : Path for downloaded Video from youtube
     data/frames/audio
     data/frames/video   :  Path for extracted frames from video 
-    data/features/audio_vggish
-    data/features/video
+    data/features/audio_vggish: Path for extracted VGGish features from audia waveform
+    data/features/video_resnet18: PAth for extracted Video features using resent features
     data/user_question  : Path to store user question audio
     """
     if not os.path.exists("data/raw_audio"):
