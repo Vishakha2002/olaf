@@ -15,8 +15,16 @@ from pprint import pprint
 from pytube import YouTube
 from moviepy.editor import VideoFileClip
 
+import torch
+from torchvision import transforms
+import torch.nn as nn
+from torch.utils.data import DataLoader
+from net_grd_avst.net_avst import AVQA_Fusion_Net
+import tensorflow as tf
+
 from  audio_feature.extract_audio_vggish_feat import generate_audio_vggish_features
 from video_feature.extract_resnet18_14x14 import extract_video_feature
+from music_avqa import ToTensor, OlafInput
 
 
 # This we are doing for vggish
@@ -291,10 +299,48 @@ def main(frontend_dev):
                 if not frontend_dev:
                     transcription = transcribe_question(video_event, default="whisper")
                     st.session_state["current_question"] = transcription
-                    
+
                     placeholder.text(transcription)
                 else:
                      placeholder.text("Testing Frontend code")
+    
+    # Getting Olafdataset
+    placeholder = st.empty()
+    with st.spinner('Getting response from MUSIC_AVQA Model...'):
+        olaf_context = st.session_state[yt_url]
+        olaf_input_obj = OlafInput(
+            vocab_label="/scratch/vtyagi14/data/json/avqa-test.json",
+            audio_vggish_features_dir="/scratch/vtyagi14/data/feats/vggish",
+            video_res14x14_dir="/scratch/vtyagi14/data/feats/res18_14x14",
+            transform=transforms.Compose([ToTensor()]),
+            current_question = "How many instruments are sounding in the video?",
+            olaf_context=olaf_context,
+            is_batch = False
+        )
+        model = AVQA_Fusion_Net()
+        model = nn.DataParallel(model)
+        model = model.to('cuda')
+        test_loader = DataLoader(olaf_input_obj, batch_size=1, pin_memory=True)
+        model.load_state_dict(torch.load("net_grd_avst/avst_models/avst.pt"))
+        model.eval()
+        with torch.no_grad():
+            for batch_idx, sample in enumerate(test_loader):
+                print(f"Vishakha batch id here is {batch_idx}")
+            # sample = olaf_input_obj.__getitem__(0)
+                audio,visual_posi,visual_nega, question = sample['audio'].to('cuda'), sample['visual_posi'].to('cuda'),sample['visual_nega'].to('cuda'), sample['question'].to('cuda')
+                preds_qa,out_match_posi,out_match_nega = model(audio, visual_posi,visual_nega, question)
+                preds = preds_qa
+                # import tensorflow as tf
+                print(preds)
+                with tf.Session() as sess:
+                    print(preds.eval()) 
+                _, predicted = torch.max(preds.data, 1)
+                st.text(type(preds))
+                st.text(preds)
+                st.text(predicted)
+                olaf_input_obj.answer_vocab.get()
+
+
 
 
 def setup_directory() -> None:

@@ -62,14 +62,13 @@ class ToTensor(object):
     def __call__(self, sample):
 
         audio = sample['audio']
-        label = sample['label']
+        # label = sample['label']
 
         return { 
                 'audio': torch.from_numpy(audio), 
                 'visual_posi': sample['visual_posi'], 
                 'visual_nega': sample['visual_nega'],
-                'question': sample['question'],
-                'label': label}
+                'question': sample['question']}
 
 
 def load_json_data(filepath: str) -> Dict:
@@ -106,7 +105,7 @@ class OlafInput(Dataset):
         # I believe this is what we would need to update in order to provide input from olaf frontend.
         # XXX Vishakha what does label means here
         
-        self.samples = self.load_json_data(vocab_label)
+        self.samples = load_json_data(vocab_label)
         # Max question length
         self.max_question_len = 14
 
@@ -123,6 +122,7 @@ class OlafInput(Dataset):
         self.olaf_context = olaf_context
 
         self.build_vocab(vocab_label)
+        # self.word_to_ix = list(self.word_to_idx)
 
 
     def build_vocab(self, vocab_label) -> None:
@@ -298,19 +298,28 @@ class OlafInput(Dataset):
             # If we are here that means we need to take input from olaf rather then do batch processing.
 
             vggish_audio_feature = np.load(self.olaf_context.get("vggish_audio_feature_file_path"))
+            print("Vishakha vggish_audio_feature before [::6, :] ~~~~~")
+            print(f"{vggish_audio_feature.shape}")
             # print("Vishakha vggish_audio_feature here ~~~~~")
-            # print(f"{vggish_audio_feature}")
+            # print(f"{vggish_audio_feature.shape}")
             # XXX TODO What does it do?
             # This seems like a 2 dimension array. and slicing is happening.
             # It seems we are selecting every 6th frame feature
             vggish_audio_feature = vggish_audio_feature[::6, :]
-            # print("Vishakha vggish_audio_feature after [::6, :] ~~~~~")
-            # print(f"{vggish_audio_feature}")
+            print("Vishakha vggish_audio_feature after [::6, :] ~~~~~")
+            print(f"{vggish_audio_feature.shape}")
 
             # resnet_video_feature
             visual_posi = np.load(self.olaf_context.get("resnet_video_feature_file_path"))
+            print("Vishakha visual_posi before [::6, :] ~~~~~")
+            print(f"{visual_posi.shape}")
             # XXX Why are we doing this??? It seems we are selecting every 6th frame feature
             visual_posi = visual_posi[::6, :]
+            print("Vishakha visual_posi after [::6, :] ~~~~~")
+            print(f"{visual_posi.shape}")
+            visual_posi = visual_posi[:-1, :]
+            print("Vishakha visual_posi after [:-1, :] ~~~~~")
+            print(f"{visual_posi.shape}")
 
             # I am not sure what is happening here but trying to reverse engineer their code.
             # SOT https://github.com/GeWu-Lab/MUSIC-AVQA/blob/10420dce9df1e27e82500da31c18efdba98bc077/net_grd_avst/dataloader_avst.py#L135
@@ -319,7 +328,7 @@ class OlafInput(Dataset):
 
                 neg_video_id = int(neg_frame_id / 60)
                 neg_frame_flag = neg_frame_id % 60
-                neg_video_name = self.video_ids[neg_video_id]
+                neg_video_name = list(self.video_ids)[neg_video_id]
 
                 visual_nega_out_res18=np.load(os.path.join(self.video_res14x14_dir, neg_video_name + '.npy'))
 
@@ -337,7 +346,7 @@ class OlafInput(Dataset):
             if question[-1] == "?":
                 question[-1] = question[-1][:-1]
             
-            idxs = [self.word_to_ix[w] for w in question]
+            idxs = [self.word_to_idx[w] for w in question]
             ques = torch.tensor(idxs, dtype=torch.long)
         
             single_sample = {
@@ -363,13 +372,23 @@ class OlafInput(Dataset):
 
 if __name__ == "__main__":
     # This is from Lab Server
+    # olaf_context = {
+    #     "video_title": "Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video",
+    #     "raw_audio": "/home/vishakha/olaf/data/raw_audio/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.wav",
+    #     "raw_video": "/home/vishakha/olaf/data/raw_video/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.mp4",
+    #     "video_frame_path": "/home/vishakha/olaf/data/frames/video/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video",
+    #     "vggish_audio_feature_file_path": "/home/vishakha/olaf/data/features/audio_vggish/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.npy",
+    #     "resnet_video_feature_file_path": "/home/vishakha/olaf/data/features/video_resnet18/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.npy",
+    #     "extracted_frames": True
+    # }
+    # This is from Suoer computer Server
     olaf_context = {
         "video_title": "Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video",
-        "raw_audio": "/home/vishakha/olaf/data/raw_audio/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.wav",
-        "raw_video": "/home/vishakha/olaf/data/raw_video/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.mp4",
-        "video_frame_path": "/home/vishakha/olaf/data/frames/video/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video",
-        "vggish_audio_feature_file_path": "/home/vishakha/olaf/data/features/audio_vggish/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.npy",
-        "resnet_video_feature_file_path": "/home/vishakha/olaf/data/features/video_resnet18/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.npy",
+        "raw_audio": "/home/vtyagi14/olaf/data/raw_audio/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.wav",
+        "raw_video": "/home/vtyagi14/olaf/data/raw_video/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.mp4",
+        "video_frame_path": "/home/vtyagi14/olaf/data/frames/video/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video",
+        "vggish_audio_feature_file_path": "/home/vtyagi14/olaf/data/features/audio_vggish/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.npy",
+        "resnet_video_feature_file_path": "/home/vtyagi14/olaf/data/features/video_resnet18/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.npy",
         "extracted_frames": True
     }
 
@@ -382,4 +401,4 @@ if __name__ == "__main__":
         olaf_context=olaf_context,
         is_batch = False
         )
-    olaf_input_obj.__getitem__(1)
+    olaf_input_obj.__getitem__(0)
