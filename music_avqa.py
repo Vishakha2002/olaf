@@ -9,8 +9,8 @@ https://pytorch.org/tutorials/beginner/basics/quickstart_tutorial.html
 
 To run a test using MUSIC AVQA model:
 python net_grd_avst/main_avst.py --mode test \
-	--audio_dir = "path to your audio features"
-	--video_res14x14_dir = "path to your visual res14x14 features"
+    --audio_dir = "path to your audio features"
+    --video_res14x14_dir = "path to your visual res14x14 features"
 
 test_dataset = AVQA_dataset(label=args.label_test, audio_dir=args.audio_dir, video_res14x14_dir=args.video_res14x14_dir,
                                    transform=transforms.Compose([ToTensor()]), mode_flag='test')
@@ -38,6 +38,7 @@ Inputs:
 Question format:
 
 """
+import random
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 os.environ["CUDA_VISIBLE_DEVICES"] = "1" # set gpu number
@@ -46,6 +47,7 @@ import ast
 import json
 import torch
 
+import numpy as np
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 
@@ -70,112 +72,314 @@ class ToTensor(object):
                 'label': label}
 
 
+def load_json_data(filepath: str) -> Dict:
+    """
+    Load json and return dict to you
+    """
+    return json.load(open(filepath, 'r'))
+
+def ids_to_multinomial(id, categories):
+    """ label encoding
+    Returns:
+      1d array, multimonial representation, e.g. [1,0,1,0,0,...]
+    """
+    id_to_idx = {id: index for index, id in enumerate(categories)}
+
+    return id_to_idx[id]
+
 class OlafInput(Dataset):
 
-    def __init__(self, label, audio_vggish_features_dir, video_res14x14_dir, transform=None):
+    def __init__(self, vocab_label, audio_vggish_features_dir, video_res14x14_dir, transform=None, current_question=None, olaf_context={}, is_batch=True):
+        """
+        Dataset class to represent data samples.
+        is_batch: It is a flag to describe if we are doing batch processing or taking one input from Olaf
+        vocab_label: Path to MUSIC_AVQA avqa-test.json
+        """
         super(Dataset, self).__init__()
         
         # We need to initialise it here once.
         self.word_to_idx = set()
         self.question_vocab = set()
         self.answer_vocab = set()
+        self.is_batch = is_batch
+
         # I believe this is what we would need to update in order to provide input from olaf frontend.
-        # Vishakha what does label means here
-        self.samples = self.load_json_data(label)
+        # XXX Vishakha what does label means here
+        
+        self.samples = self.load_json_data(vocab_label)
         # Max question length
         self.max_question_len = 14
 
-        # why do we need this?
-        # self.audio_vggish_features_dir = audio_vggish_features_dir
-        # why do we need this?
-        # self.video_res14x14_dir = video_res14x14_dir
+        # XXX why do we need this?
+        self.audio_vggish_features_dir = audio_vggish_features_dir
+        # XXX why do we need this?
+        self.video_res14x14_dir = video_res14x14_dir
 
         self.video_ids = {sample['video_id'] for sample in self.samples}
         self.total_sample_video_count = 60 * len(self.video_ids)
         self.transform = transform
 
-        self.build_vocab()
+        self.current_question = current_question
+        self.olaf_context = olaf_context
+
+        self.build_vocab(vocab_label)
 
 
-        def __len__(self):
-            return len(self.samples)
+    def build_vocab(self, vocab_label) -> None:
+        """
+        Read AVQA JSON training to build question and answer vocab for our model.
+        Here we are using the same dataset provided to us by them.
+
+        For now we will be using Training question answer dataset. Its a list of dict.
+        Sample:
+        {
+            "video_id": "sa00007434",
+            "question_id": 28884,
+            "type": "[\"Visual\", \"Counting\"]",
+            "question_content": "Are there <Object> and <Object> instruments in the video?",
+            "templ_values": "[\"piano\", \"ukulele\"]",
+            "question_deleted": 0,
+            "anser": "no"
+        }
+        Path:
+        /scratch/vtyagi14/data/json/avqa-train.json
+
+        """
+        question = []
+        vocab_dataset_path = vocab_label
+        # vocab_dataset_path = '/scratch/vtyagi14/data/json/avqa-train.json'
+        # XXX Do we need a padding? 
+        # question_vocab = ['<pad>']
+        # question_vocab = set()
 
 
-        def __getitem__(self, idx):
+        vocab_dataset_dict = load_json_data(vocab_dataset_path)
+        for sample in vocab_dataset_dict:
+            question = sample['question_content'].rstrip().split(' ')
+            question[-1] = question[-1][:-1]  # This is just removing the "?" from the last word
 
-            sample = self.samples[idx]
-            name = sample['video_id']
-            # This is comming from vggish outout
-            # audio = np.load(os.path.join(self.audio_dir, name + '.npy'))
-
-        def make_sample(self):
-            pass
-            
-                        
-        def build_vocab(self) -> None:
-            """
-            Read AVQA JSON training to build question and answer vocab for our model.
-            Here we are using the same dataset provided to us by them.
-
-            For now we will be using Training question answer dataset. Its a list of dict.
-            Sample:
-            {
-                "video_id": "sa00007434",
-                "question_id": 28884,
-                "type": "[\"Visual\", \"Counting\"]",
-                "question_content": "Are there <Object> and <Object> instruments in the video?",
-                "templ_values": "[\"piano\", \"ukulele\"]",
-                "question_deleted": 0,
-                "anser": "no"
-            }
-            Path:
-            /scratch/vtyagi14/data/json/avqa-train.json
-
-            """
-            question = []
-            vocab_dataset_path = '/scratch/vtyagi14/data/json/avqa-train.json'
-            # XXX Do we need a padding? 
-            # question_vocab = ['<pad>']
-            # question_vocab = set()
-
-
-            vocab_dataset_dict = load_json_data(vocab_dataset_path)
-            for sample in vocab_dataset_dict:
-                question = sample['question_content'].rstrip().split(' ')
-                question[-1] = question[-1][:-1]  # This is just removing the "?" from the last word
-
-                # Now lets form the question by using templ_values
-                # Sample Question:
-                #     Are there <Object> and <Object> instruments in the video?
-                # Sample Template values:
-                #     "[\"piano\", \"ukulele\"]"
-                # After running through literal_eval we will get the question string. Example:
-                #     Are there piano and ukulele instruments in the video?
-                found_object_index = 0
-                for index in range(len(question)):
-                    # Looks for "<" in the word list. We are looking for word <Object>
-                    if '<' in question[index]:
-                        question[index] = ast.literal_eval(sample['templ_values'])[found_object_index]
-                        found_object_index += 1
+            # Now lets form the question by using templ_values
+            # Sample Question:
+            #     Are there <Object> and <Object> instruments in the video?
+            # Sample Template values:
+            #     "[\"piano\", \"ukulele\"]"
+            # After running through literal_eval we will get the question string. Example:
+            #     Are there piano and ukulele instruments in the video?
+            found_object_index = 0
+            for index in range(len(question)):
+                # Looks for "<" in the word list. We are looking for word <Object>
+                if '<' in question[index]:
+                    question[index] = ast.literal_eval(sample['templ_values'])[found_object_index]
+                    found_object_index += 1
 
             for word in question:
                 self.question_vocab.add(word)
+        
+        current_question = self.current_question.split(' ')
+        if current_question[-1] == "?":
+            current_question[-1] = current_question[-1][:-1]
+        for word in current_question:
+                self.question_vocab.add(word)
             
-            self.word_to_idx = {word: i for i, word in enumerate(self.question_vocab)}
-            
-            # Since answers are only one word we didn't need to first convert it in a list.
-            self.answer_vocab.add(sample['anser'])
+        self.word_to_idx = {word: i for i, word in enumerate(self.question_vocab)}
+        
+        # Since answers are only one word we didn't need to first convert it in a list.
+        self.answer_vocab.add(sample['anser'])
+        
+        
 
-        def load_json_data(filepath: str) -> Dict:
-            """
-            Load json and return dict to you
-            """
-            return json.load(open(filepath, 'r'))
+    def __len__(self):
+        if self.is_batch:
+            return len(self.samples)
+        
+        return 1
+
+
+    def __getitem__(self, idx):
+        """
+        sample = self.samples[idx]
+        # sample example
+        {
+            "video_id": "00000093",
+            "question_id": 12,
+            "type": "[\"Audio\", \"Counting\"]",
+            "question_content": "How many musical instruments were heard throughout the video?",
+            "templ_values": "[]",
+            "question_deleted": 0,
+            "anser": "one"
+        }
+        # This is the name of the video. In our case, it would be the name of our video
+        name = sample['video_id']
+        # Load vggish audio features
+        audio = np.load(os.path.join(self.audio_dir, name + '.npy'))
+        # XXX What does it do? This seems like a 2 dimension array. and slicing is happening.
+        # It seems we are selecting every 6th frame feature
+        audio = audio[::6, :]
+
+        # visual_out_res18_path = '/home/guangyao_li/dataset/avqa-features/visual_14x14'
+        # Load resent18 features.
+        visual_posi = np.load(os.path.join(self.video_res14x14_dir, name + '.npy'))  
+    
+        # visual_posi [60, 512, 14, 14], select 10 frames from one video
+        # XXX Why are we doing this??? It seems we are selecting every 6th frame feature
+        visual_posi = visual_posi[::6, :]
+        video_idx=self.video_list.index(name)
+
+        for i in range(visual_posi.shape[0]):
+            while(1):
+                neg_frame_id = random.randint(0, self.video_len - 1)
+                if (int(neg_frame_id/60) != video_idx):
+                    break
+
+            neg_video_id = int(neg_frame_id / 60)
+            neg_frame_flag = neg_frame_id % 60
+            neg_video_name = self.video_list[neg_video_id]
+            visual_nega_out_res18=np.load(os.path.join(self.video_res14x14_dir, neg_video_name + '.npy'))
+
+            visual_nega_out_res18 = torch.from_numpy(visual_nega_out_res18)
+            visual_nega_clip=visual_nega_out_res18[neg_frame_flag,:,:,:].unsqueeze(0)
+
+            if(i==0):
+                visual_nega=visual_nega_clip
+            else:
+                visual_nega=torch.cat((visual_nega,visual_nega_clip),dim=0)
+
+        # visual nega [60, 512, 14, 14]
+
+        # question
+        question_id = sample['question_id']
+        question = sample['question_content'].rstrip().split(' ')
+        question[-1] = question[-1][:-1]
+
+        p = 0
+        for pos in range(len(question)):
+            if '<' in question[pos]:
+                question[pos] = ast.literal_eval(sample['templ_values'])[p]
+                p += 1
+        if len(question) < self.max_len:
+            n = self.max_len - len(question)
+            for i in range(n):
+                question.append('<pad>')
+        idxs = [self.word_to_ix[w] for w in question]
+        ques = torch.tensor(idxs, dtype=torch.long)
+
+        # answer
+        answer = sample['anser']
+        label = ids_to_multinomial(answer, self.ans_vocab)
+        label = torch.from_numpy(np.array(label)).long()
+
+        sample = {'audio': audio, 'visual_posi': visual_posi, 'visual_nega': visual_nega, 'question': ques, 'label': label}
+
+        if self.transform:
+            sample = self.transform(sample)
+
+        {
+            "video_title": "Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video",
+            "raw_audio": "/home/vishakha/olaf/data/raw_audio/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.wav",
+            "raw_video": "/home/vishakha/olaf/data/raw_video/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.mp4",
+            "video_frame_path": "/home/vishakha/olaf/data/frames/video/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video",
+            "vggish_audio_feature_file_path": "/home/vishakha/olaf/data/features/audio_vggish/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.npy",
+            "resnet_video_feature_file_path": "/home/vishakha/olaf/data/features/video_resnet18/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.npy",
+            "extracted_frames": True
+        }
+
+        return sample
+        """
+        # XXX Comeup with a better name and reset default as you become aware of them
+        # single_sample = {
+        #     'audio': None, 
+        #     'visual_posi': None,
+        #     'visual_nega': None,
+        #     'question': None,
+        #     'label': None
+        # }
+
+        if not self.is_batch:
+            # If we are here that means we need to take input from olaf rather then do batch processing.
+
+            vggish_audio_feature = np.load(self.olaf_context.get("vggish_audio_feature_file_path"))
+            # print("Vishakha vggish_audio_feature here ~~~~~")
+            # print(f"{vggish_audio_feature}")
+            # XXX TODO What does it do?
+            # This seems like a 2 dimension array. and slicing is happening.
+            # It seems we are selecting every 6th frame feature
+            vggish_audio_feature = vggish_audio_feature[::6, :]
+            # print("Vishakha vggish_audio_feature after [::6, :] ~~~~~")
+            # print(f"{vggish_audio_feature}")
+
+            # resnet_video_feature
+            visual_posi = np.load(self.olaf_context.get("resnet_video_feature_file_path"))
+            # XXX Why are we doing this??? It seems we are selecting every 6th frame feature
+            visual_posi = visual_posi[::6, :]
+
+            # I am not sure what is happening here but trying to reverse engineer their code.
+            # SOT https://github.com/GeWu-Lab/MUSIC-AVQA/blob/10420dce9df1e27e82500da31c18efdba98bc077/net_grd_avst/dataloader_avst.py#L135
+            for i in range(visual_posi.shape[0]):
+                neg_frame_id = random.randint(0, self.total_sample_video_count - 1)
+
+                neg_video_id = int(neg_frame_id / 60)
+                neg_frame_flag = neg_frame_id % 60
+                neg_video_name = self.video_ids[neg_video_id]
+
+                visual_nega_out_res18=np.load(os.path.join(self.video_res14x14_dir, neg_video_name + '.npy'))
+
+                visual_nega_out_res18 = torch.from_numpy(visual_nega_out_res18)
+                visual_nega_clip=visual_nega_out_res18[neg_frame_flag,:,:,:].unsqueeze(0)
+
+                if(i==0):
+                    visual_nega=visual_nega_clip
+                else:
+                    visual_nega=torch.cat((visual_nega,visual_nega_clip),dim=0)
+
+            print(f"vishakha visual_nega shape {visual_nega.shape}")
+
+            question = self.current_question.split(' ')
+            if question[-1] == "?":
+                question[-1] = question[-1][:-1]
+            
+            idxs = [self.word_to_ix[w] for w in question]
+            ques = torch.tensor(idxs, dtype=torch.long)
+        
+            single_sample = {
+                'audio': vggish_audio_feature, 
+                'visual_posi': visual_posi,
+                'visual_nega': visual_nega,
+                'question': ques
+            }
+
+            if self.transform:
+                sample = self.transform(single_sample)
+            return sample
+
+
+        raise Exception("Not Implemented for batch processing yet")
+        # XXX Vishakha this code is almost implement at the following link.
+        # https://github.com/GeWu-Lab/MUSIC-AVQA/blob/main/net_grd_avst/dataloader_avst.py#L121
+
+
+    def make_sample(self):
+        pass
+
 
 if __name__ == "__main__":
+    # This is from Lab Server
+    olaf_context = {
+        "video_title": "Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video",
+        "raw_audio": "/home/vishakha/olaf/data/raw_audio/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.wav",
+        "raw_video": "/home/vishakha/olaf/data/raw_video/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.mp4",
+        "video_frame_path": "/home/vishakha/olaf/data/frames/video/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video",
+        "vggish_audio_feature_file_path": "/home/vishakha/olaf/data/features/audio_vggish/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.npy",
+        "resnet_video_feature_file_path": "/home/vishakha/olaf/data/features/video_resnet18/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.npy",
+        "extracted_frames": True
+    }
+
     olaf_input_obj = OlafInput(
-        label="/scratch/vtyagi14/data/json/avqa-test.json",
+        vocab_label="/scratch/vtyagi14/data/json/avqa-test.json",
         audio_vggish_features_dir="/scratch/vtyagi14/data/feats/vggish",
         video_res14x14_dir="/scratch/vtyagi14/data/feats/res18_14x14",
         transform=transforms.Compose([ToTensor()]),
+        current_question = "How many instruments are sounding in the video?",
+        olaf_context=olaf_context,
+        is_batch = False
         )
+    olaf_input_obj.__getitem__(1)

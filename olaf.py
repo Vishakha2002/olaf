@@ -290,6 +290,8 @@ def main(frontend_dev):
             with st.spinner('Transcribing Question...'):
                 if not frontend_dev:
                     transcription = transcribe_question(video_event, default="whisper")
+                    st.session_state["current_question"] = transcription
+                    
                     placeholder.text(transcription)
                 else:
                      placeholder.text("Testing Frontend code")
