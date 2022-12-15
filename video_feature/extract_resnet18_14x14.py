@@ -78,7 +78,8 @@ def extract_feats(model, framepath, load_image_fn):
 
 
 def extract_video_feature(framepath):
-    os.environ['CUDA_VISIBLE_DEVICES'] = "0, 1"
+    # XXX maybe needed in Super computer.
+    # os.environ['CUDA_VISIBLE_DEVICES'] = "0, 1"
     
     pretrained_resnet_model = pretrainedmodels.resnet18(pretrained='imagenet')
     load_image_fn = utils.LoadTransformImage(pretrained_resnet_model)

@@ -250,11 +250,11 @@ def preprocess_youtube_video(yt_url, frontend_dev):
             "resnet_video_feature_file_path": os.path.join(os.getcwd(),resnet_video_feature_file_path),
             "extracted_frames": extracted_frames,
         }
-        with open('data/preprocessed_urls.txt', 'w', encoding='utf-8') as my_file:
+        with open('data/preprocessed_urls.txt', 'a', encoding='utf-8') as my_file:
             my_file.write(yt_url+'\n')
         st.success('Pre processing Done!')
         st.write(st.session_state[yt_url])
-        time.sleep(5)
+        # time.sleep(5)
 
 
 def main(frontend_dev):
