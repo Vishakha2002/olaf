@@ -197,7 +197,7 @@ def preprocess_youtube_video(yt_url, frontend_dev):
     5. Run Resnet18
     """
     saved_audio = None
-    # 
+    
     with open('data/preprocessed_urls.txt') as my_file:
         yt_urls = [line for line in my_file] 
 
@@ -303,7 +303,7 @@ def main(frontend_dev):
         placeholder = st.empty()
         with st.spinner('Starting batch...'):
             for count, url in enumerate(yt_urls):
-                placeholder.write(f"Preprocessing url {count}/{video_count}. Url - url")
+                placeholder.write(f"Preprocessing url {count}/{video_count}. Url - {url}")
                 preprocess_youtube_video(url, frontend_dev)
 
     else:
@@ -419,6 +419,8 @@ def setup_directory() -> None:
         os.makedirs("data/features/video_resnet18")
     if not os.path.exists("data/pretrained"):
         os.makedirs("data/pretrained")
+    if not os.path.exists("data/preprocessed_urls.txt"):
+        open("data/preprocessed_urls.txt", 'a').close()
         
 
 
