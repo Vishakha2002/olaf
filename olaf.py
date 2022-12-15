@@ -3,8 +3,10 @@ https://github.com/suyashkumar/ssl-proxy If you need reverse proxy in front of s
 """
 
 import re
+import json
 import os
 import time
+from tkinter import Y
 import streamlit.components.v1 as components
 import streamlit as st
 
@@ -197,13 +199,15 @@ def preprocess_youtube_video(yt_url, frontend_dev):
     5. Run Resnet18
     """
     saved_audio = None
+    yt_urls = []
     
     with open('data/preprocessed_urls.txt') as my_file:
-        yt_urls = [line for line in my_file] 
+        yt_urls = [line.rstrip("\n") for line in my_file]
 
         if yt_url in yt_urls:
             print(f"!!!!!!!!!! Already preprocessed {yt_url}. !!!!!!!!!!")
             return
+
     video_object = YouTube(yt_url)
     video_title = re.sub(r'[^A-Za-z0-9 ]+', '', video_object.title)
     video_title = video_title.replace(" ", "_")
@@ -214,15 +218,15 @@ def preprocess_youtube_video(yt_url, frontend_dev):
 
     if yt_url not in st.session_state:
         extracted_frames = False
-        with st.spinner('Video Preprocessing...'):
+        with st.spinner('Preprocessing: Video.'):
             # start video download
             saved_video = video_object.streams.filter(mime_type="video/mp4", res="720p").first().download(filename=video_filename, output_path="data/raw_video")
-            st.write(f"Downloaded video at {saved_video}")
+            print(f"Downloaded video at {saved_video}")
 
             if not frontend_dev:
                 # Extract Audio from the saved video
                 saved_audio = get_audio_wav(audio_filename=audio_filename, video_path=saved_video)
-                st.write(f"Extracted Audio saved at {saved_audio}")
+                print(f"Extracted Audio saved at {saved_audio}")
 
                 # Here we will extract frames from the saved video file
                 try:
@@ -233,7 +237,7 @@ def preprocess_youtube_video(yt_url, frontend_dev):
                     if frame_count == 0:
                         extract_frames(saved_video, video_frame_path)
                         frame_count = len(os.listdir(video_frame_path))
-                    st.write(f"Extracted Video frames saved at {video_frame_path}. Count: {frame_count}")
+                    print(f"Extracted Video frames saved at {video_frame_path}. Count: {frame_count}")
                     extracted_frames = True
 
                     vggish_audio_feature_file_path = generate_audio_vggish_features(saved_audio)
@@ -241,7 +245,7 @@ def preprocess_youtube_video(yt_url, frontend_dev):
                 except Exception:
                     raise
     
-        st.session_state[yt_url] = {
+        preprocess_state = {
             "video_title": video_title,
             "raw_audio": saved_audio,
             "raw_video": saved_video,
@@ -250,11 +254,56 @@ def preprocess_youtube_video(yt_url, frontend_dev):
             "resnet_video_feature_file_path": os.path.join(os.getcwd(),resnet_video_feature_file_path),
             "extracted_frames": extracted_frames,
         }
-        with open('data/preprocessed_urls.txt', 'a', encoding='utf-8') as my_file:
-            my_file.write(yt_url+'\n')
-        st.success('Pre processing Done!')
-        st.write(st.session_state[yt_url])
-        # time.sleep(5)
+        # st.session_state[yt_url] = preprocess_state
+        if yt_url not in yt_urls:
+            with open('data/preprocessed_urls.txt', 'a', encoding='utf-8') as my_file:
+                my_file.write(yt_url+'\n')
+            
+            with open('data/preprocessed_urls_metadata.txt') as my_file:
+                dictionary = json.load(my_file)
+            
+            dictionary[yt_url] = preprocess_state
+
+            with open('data/preprocessed_urls_metadata.txt', "w") as outfile:
+                json.dump(dictionary, outfile)
+
+        # st.write(st.session_state[yt_url])
+
+
+def run_batch_processing(frontend_dev):
+    yt_urls = [
+            "https://www.youtube.com/watch?v=6gQ7m0c4ReI",
+            "https://youtu.be/is68rlOzEio",
+            "https://youtu.be/5sHwuARMXj0",
+            "https://youtu.be/zcyatK8qc7c",
+            "https://youtu.be/3dOATkCOguI",
+            "https://youtu.be/2m9fqUQgzUA",
+            "https://youtu.be/mQpzKwSxiOw",
+            "https://youtu.be/NqSKXimnl6Y",
+            "https://youtu.be/P3LjmYl4Yd8",
+            # "https://youtu.be/R3SOHWhJ398",
+            # "https://youtu.be/MCO2-ikxe1I",
+            "https://youtu.be/rsJgPnWDflU",
+            "https://youtu.be/AHlG_PwwvGY",
+            "https://youtu.be/BIPTE84l9ls",
+            "https://youtu.be/iveZwfEhZYI",
+            "https://youtu.be/3dOATkCOguI",
+            "https://youtu.be/Oipg71dSem0",
+            "https://youtu.be/-PWiegZQfAY",
+            "https://youtu.be/1Asc6IaPunU",
+            "https://youtu.be/l0JKkmztuRE",
+            "https://youtu.be/pxoW-00Zyho",
+            "https://youtu.be/ZPdk5GaIDjo",
+            "https://youtu.be/WRe2sz5l9JE"
+        ]
+    video_count = len(yt_urls)
+    placeholder = st.empty()
+    with st.spinner('Starting batch processing on {video_count} youtube videos...'):
+        for count, url in enumerate(yt_urls):
+            placeholder.write(f"Preprocessing url {count+1}/{video_count}. Url - {url}")
+            preprocess_youtube_video(url, frontend_dev)
+    
+    placeholder.write("Batch processing finished successfully")
 
 
 def main(frontend_dev):
@@ -285,26 +334,7 @@ def main(frontend_dev):
     }
 
     if is_batch:
-        yt_urls = [
-            "https://www.youtube.com/watch?v=6gQ7m0c4ReI",
-            "https://youtu.be/is68rlOzEio",
-            "https://www.youtube.com/watch?v=nK1r_9hPWuI",
-            "https://youtu.be/5sHwuARMXj0",
-            "https://youtu.be/zcyatK8qc7c",
-            "https://youtu.be/3dOATkCOguI",
-            "https://youtu.be/2m9fqUQgzUA",
-            "https://youtu.be/mQpzKwSxiOw",
-            "https://youtu.be/NqSKXimnl6Y",
-            "https://youtu.be/P3LjmYl4Yd8"
-        ]
-        video_count = len(yt_urls)
-
-        st.write(f"Starting batch processing on {video_count} youtube videos")
-        placeholder = st.empty()
-        with st.spinner('Starting batch...'):
-            for count, url in enumerate(yt_urls):
-                placeholder.write(f"Preprocessing url {count}/{video_count}. Url - {url}")
-                preprocess_youtube_video(url, frontend_dev)
+        run_batch_processing(frontend_dev)
 
     else:
         yt_urls = [
@@ -343,7 +373,11 @@ def main(frontend_dev):
             # Getting Olafdataset
             placeholder_2 = st.empty()
             with st.spinner('Getting response from MUSIC_AVQA Model...'):
-                olaf_context = st.session_state[yt_url]
+                # olaf_context = st.session_state[yt_url]
+                olaf_context = {}
+                with open('data/preprocessed_urls_metadata.txt') as my_file:
+                    olaf_context = json.load(my_file).get(yt_url)
+
                 olaf_input_obj = OlafInput(
                     vocab_label="/scratch/vtyagi14/data/json/avqa-test.json",
                     audio_vggish_features_dir="/scratch/vtyagi14/data/feats/vggish",
@@ -421,7 +455,10 @@ def setup_directory() -> None:
         os.makedirs("data/pretrained")
     if not os.path.exists("data/preprocessed_urls.txt"):
         open("data/preprocessed_urls.txt", 'a').close()
-        
+    if not os.path.exists("data/preprocessed_urls_metadata.txt"):
+        with open("data/preprocessed_urls_metadata.txt", 'w') as foo:
+            yo = {}
+            json.dump(yo, foo)
 
 
 

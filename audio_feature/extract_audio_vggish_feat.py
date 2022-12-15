@@ -32,11 +32,11 @@ def generate_audio_vggish_features(filename):
     audio_dir = "data/raw_audios" # .wav audio files
     save_dir = "data/features/audio_vggish/"
 
-    st.write("Starting to extract viggish audio features")
+    # st.write("Starting to extract viggish audio features")
     raw_name = filename.split('/')[-1]
     raw_name = raw_name.split(".")[0]
 
-    st.write(f"Vishakha raw file name {raw_name}")
+    # st.write(f"Vishakha raw file name {raw_name}")
 
     outfile = os.path.join(save_dir, raw_name + '.npy')
     if os.path.exists(outfile):
@@ -63,7 +63,7 @@ def generate_audio_vggish_features(filename):
         features_tensor = sess.graph.get_tensor_by_name(vggish_params.INPUT_TENSOR_NAME)
         embedding_tensor = sess.graph.get_tensor_by_name(vggish_params.OUTPUT_TENSOR_NAME)
         [embedding_batch] = sess.run([embedding_tensor], feed_dict={features_tensor: input_batch})
-        print(f'VGGish embedding: {embedding_batch[0]}')
+        # print(f'VGGish embedding: {embedding_batch[0]}')
 
         np.save(outfile, embedding_batch)
         print(f" save info: {outfile} ---> {embedding_batch.shape}" )
