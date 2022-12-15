@@ -195,11 +195,15 @@ def preprocess_youtube_video(yt_url, frontend_dev):
     3. Extract frames from video using ffmeg
     4. Run VGGish
     5. Run Resnet18
-    
     """
     saved_audio = None
-    if yt_url in st.session_state:
-        return
+    # 
+    with open('data/preprocessed_urls.txt') as my_file:
+        yt_urls = [line for line in my_file] 
+
+        if yt_url in yt_urls:
+            print(f"!!!!!!!!!! Already preprocessed {yt_url}. !!!!!!!!!!")
+            return
     video_object = YouTube(yt_url)
     video_title = re.sub(r'[^A-Za-z0-9 ]+', '', video_object.title)
     video_title = video_title.replace(" ", "_")
@@ -246,6 +250,8 @@ def preprocess_youtube_video(yt_url, frontend_dev):
             "resnet_video_feature_file_path": os.path.join(os.getcwd(),resnet_video_feature_file_path),
             "extracted_frames": extracted_frames,
         }
+        with open('data/preprocessed_urls.txt', 'w', encoding='utf-8') as my_file:
+            my_file.write(yt_url+'\n')
         st.success('Pre processing Done!')
         st.write(st.session_state[yt_url])
         time.sleep(5)
@@ -261,6 +267,12 @@ def main(frontend_dev):
         layout="wide",
     )
 
+    is_batch_input = st.radio(
+        "Is batch processing?",
+        ('Yes', 'No')
+    )
+    is_batch = is_batch_input == 'Yes'
+
     # Setup for streamlit_player
     _SUPPORTED_EVENTS = [
         "onStart", "onPlay", "onProgress", "onDuration", "onPause",
@@ -272,89 +284,104 @@ def main(frontend_dev):
         "progress_interval": 1000
     }
 
-    # XXX Take user input instead of harcoding.
-    yt_urls = [
-        "https://www.youtube.com/watch?v=6gQ7m0c4ReI",
-        "https://youtu.be/is68rlOzEio",
-        "https://www.youtube.com/watch?v=nK1r_9hPWuI",
-        "https://youtu.be/5sHwuARMXj0",
-        "https://youtu.be/zcyatK8qc7c",
-        "https://youtu.be/3dOATkCOguI",
-        "https://youtu.be/UswDvaaKRU4",
-        "https://youtu.be/mQpzKwSxiOw",
-        "https://youtu.be/NqSKXimnl6Y",
-        "https://youtu.be/P3LjmYl4Yd8"
-    ]
-    yt_url = st.selectbox("Please select a video to be play", options=yt_urls)
-    # pprint(st.session_state.get(yt_url))
+    if is_batch:
+        yt_urls = [
+            "https://www.youtube.com/watch?v=6gQ7m0c4ReI",
+            "https://youtu.be/is68rlOzEio",
+            "https://www.youtube.com/watch?v=nK1r_9hPWuI",
+            "https://youtu.be/5sHwuARMXj0",
+            "https://youtu.be/zcyatK8qc7c",
+            "https://youtu.be/3dOATkCOguI",
+            "https://youtu.be/UswDvaaKRU4",
+            "https://youtu.be/mQpzKwSxiOw",
+            "https://youtu.be/NqSKXimnl6Y",
+            "https://youtu.be/P3LjmYl4Yd8"
+        ]
+        video_count = len(yt_urls)
 
-    # video_uri = st.session_state[yt_url].get('raw_video')
-    if frontend_dev:
-        st.write(f"Here the vide is saved at {st.session_state[yt_url]['raw_video']}")
-    
+        st.write(f"Starting batch processing on {video_count} youtube videos")
+        placeholder = st.empty()
+        with st.spinner('Starting batch...'):
+            for count, url in enumerate(yt_urls):
+                placeholder.write(f"Preprocessing url {count}/{video_count}. Url - url")
+                preprocess_youtube_video(url, frontend_dev)
 
-    av_player_parent_dir = os.path.dirname(os.path.abspath(__file__))
-    av_player_build_dir = os.path.join(av_player_parent_dir, "av_player/frontend/build")
-    av_player = components.declare_component("streamlit_player", path=av_player_build_dir)
+    else:
+        yt_urls = [
+            "https://www.youtube.com/watch?v=6gQ7m0c4ReI",
+            "https://youtu.be/is68rlOzEio"]
 
-    # STREAMLIT Video Player Instance
-    video_event = av_player(url=yt_url, width ="500px", height = "300px", **options)
+        # XXX Take user input instead of harcoding.
+        
+        yt_url = st.selectbox("Please select a video to be play", options=yt_urls)
 
-    parse_video_event(video_event)
-    placeholder = st.empty()
-    if isinstance(video_event, dict):  # retrieve audio data
-        if "arr" in video_event.keys():
-            with st.spinner('Transcribing Question...'):
-                if not frontend_dev:
-                    transcription = transcribe_question(video_event, default="whisper")
-                    st.session_state["current_question"] = transcription
+        # video_uri = st.session_state[yt_url].get('raw_video')
+        if frontend_dev:
+            st.write(f"Here the vide is saved at {st.session_state[yt_url]['raw_video']}")
+        
 
-                    placeholder.text(transcription)
-                else:
-                    placeholder.text("Testing Frontend code")
-        preprocess_youtube_video(yt_url, frontend_dev)
-        # Getting Olafdataset
-        placeholder_2 = st.empty()
-        with st.spinner('Getting response from MUSIC_AVQA Model...'):
-            olaf_context = st.session_state[yt_url]
-            olaf_input_obj = OlafInput(
-                vocab_label="/scratch/vtyagi14/data/json/avqa-test.json",
-                audio_vggish_features_dir="/scratch/vtyagi14/data/feats/vggish",
-                video_res14x14_dir="/scratch/vtyagi14/data/feats/res18_14x14",
-                current_answer='one',
-                transform=transforms.Compose([ToTensor()]),
-                # current_question = transcription,
-                current_question = "How many instruments are being played?",
-                olaf_context=olaf_context,
-                is_batch = False
-            )
-            # answer_labels = olaf_input_obj.answer_label
-            model = AVQA_Fusion_Net()
-            model = nn.DataParallel(model)
-            model = model.to('cuda')
-            test_loader = DataLoader(olaf_input_obj, batch_size=1, pin_memory=True)
-            model.load_state_dict(torch.load("net_grd_avst/avst_models/avst.pt"))
-            model.eval()
-            with torch.no_grad():
-                for batch_idx, sample in enumerate(test_loader):
-                    print(f"Vishakha batch id here is {batch_idx}")
-                    audio = sample['audio'].to('cuda')
-                    visual_posi = sample['visual_posi'].to('cuda')
-                    visual_nega = sample['visual_nega'].to('cuda')
-                    question = sample['question'].to('cuda')
-                    target = sample['label'].to('cuda')
-                    preds_qa,out_match_posi,out_match_nega = model(audio, visual_posi,visual_nega, question)
-                    preds = preds_qa
-                    # print(preds)
-                    _, predicted = torch.max(preds.data, 1)
-                    is_correct = target == predicted
+        av_player_parent_dir = os.path.dirname(os.path.abspath(__file__))
+        av_player_build_dir = os.path.join(av_player_parent_dir, "av_player/frontend/build")
+        av_player = components.declare_component("streamlit_player", path=av_player_build_dir)
 
-                    print(type(preds))
-                    print(preds)
-                    print(predicted)
-                    placeholder_2.write(is_correct)
+        # STREAMLIT Video Player Instance
+        video_event = av_player(url=yt_url, width ="500px", height = "300px", **options)
 
-                    # answers = list(olaf_input_obj.answer_vocab)
+        parse_video_event(video_event)
+        placeholder = st.empty()
+        if isinstance(video_event, dict):  # retrieve audio data
+            if "arr" in video_event.keys():
+                with st.spinner('Transcribing Question...'):
+                    if not frontend_dev:
+                        transcription = transcribe_question(video_event, default="whisper")
+                        st.session_state["current_question"] = transcription
+
+                        placeholder.text(transcription)
+                    else:
+                        placeholder.text("Testing Frontend code")
+            preprocess_youtube_video(yt_url, frontend_dev)
+            # Getting Olafdataset
+            placeholder_2 = st.empty()
+            with st.spinner('Getting response from MUSIC_AVQA Model...'):
+                olaf_context = st.session_state[yt_url]
+                olaf_input_obj = OlafInput(
+                    vocab_label="/scratch/vtyagi14/data/json/avqa-test.json",
+                    audio_vggish_features_dir="/scratch/vtyagi14/data/feats/vggish",
+                    video_res14x14_dir="/scratch/vtyagi14/data/feats/res18_14x14",
+                    current_answer='one',
+                    transform=transforms.Compose([ToTensor()]),
+                    # current_question = transcription,
+                    current_question = "How many instruments are being played?",
+                    olaf_context=olaf_context,
+                    is_batch = False
+                )
+                # answer_labels = olaf_input_obj.answer_label
+                model = AVQA_Fusion_Net()
+                model = nn.DataParallel(model)
+                model = model.to('cuda')
+                test_loader = DataLoader(olaf_input_obj, batch_size=1, pin_memory=True)
+                model.load_state_dict(torch.load("net_grd_avst/avst_models/avst.pt"))
+                model.eval()
+                with torch.no_grad():
+                    for batch_idx, sample in enumerate(test_loader):
+                        print(f"Vishakha batch id here is {batch_idx}")
+                        audio = sample['audio'].to('cuda')
+                        visual_posi = sample['visual_posi'].to('cuda')
+                        visual_nega = sample['visual_nega'].to('cuda')
+                        question = sample['question'].to('cuda')
+                        target = sample['label'].to('cuda')
+                        preds_qa,out_match_posi,out_match_nega = model(audio, visual_posi,visual_nega, question)
+                        preds = preds_qa
+                        # print(preds)
+                        _, predicted = torch.max(preds.data, 1)
+                        is_correct = target == predicted
+
+                        print(type(preds))
+                        print(preds)
+                        print(predicted)
+                        placeholder_2.write(is_correct)
+
+                        # answers = list(olaf_input_obj.answer_vocab)
 
 
 
