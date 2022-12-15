@@ -54,21 +54,37 @@ from torchvision import transforms
 from typing import Dict, Tuple
 
 
+# class ToTensor(object):
+#     """
+#     XXX Need to understand why this is needed
+#     """
+
+#     def __call__(self, sample):
+
+#         audio = sample['audio']
+#         # label = sample['label']
+
+#         return { 
+#                 'audio': torch.from_numpy(audio), 
+#                 'visual_posi': sample['visual_posi'], 
+#                 'visual_nega': sample['visual_nega'],
+#                 'question': sample['question']}
+
 class ToTensor(object):
-    """
-    XXX Need to understand why this is needed
-    """
 
     def __call__(self, sample):
 
         audio = sample['audio']
-        # label = sample['label']
+        # visual_posi = sample['visual_posi']
+        # visual_nega = sample['visual_nega']
 
         return { 
                 'audio': torch.from_numpy(audio), 
-                'visual_posi': sample['visual_posi'], 
+                'visual_posi': sample['visual_posi'],
                 'visual_nega': sample['visual_nega'],
-                'question': sample['question']}
+                'question': sample['question'],
+                'label': sample['label']}
+
 
 
 def load_json_data(filepath: str) -> Dict:
@@ -86,9 +102,10 @@ def ids_to_multinomial(id, categories):
 
     return id_to_idx[id]
 
+
 class OlafInput(Dataset):
 
-    def __init__(self, vocab_label, audio_vggish_features_dir, video_res14x14_dir, transform=None, current_question=None, olaf_context={}, is_batch=True):
+    def __init__(self, vocab_label, audio_vggish_features_dir, video_res14x14_dir, current_answer, transform=None, current_question=None, olaf_context={}, is_batch=True):
         """
         Dataset class to represent data samples.
         is_batch: It is a flag to describe if we are doing batch processing or taking one input from Olaf
@@ -99,7 +116,7 @@ class OlafInput(Dataset):
         # We need to initialise it here once.
         self.word_to_idx = set()
         self.question_vocab = set()
-        self.answer_vocab = set()
+        self.answer_vocab = []
         self.is_batch = is_batch
 
         # I believe this is what we would need to update in order to provide input from olaf frontend.
@@ -121,8 +138,18 @@ class OlafInput(Dataset):
         self.current_question = current_question
         self.olaf_context = olaf_context
 
+        self.answer_label = {}
+
         self.build_vocab(vocab_label)
         # self.word_to_ix = list(self.word_to_idx)
+        self.current_answer = current_answer
+        # self.build_answer_label()
+    
+    def build_answer_label(self):
+        for answer in self.answer_vocab:
+            label = ids_to_multinomial(answer, self.answer_vocab)
+            label = torch.from_numpy(np.array(label)).long()
+            self.answer_label[label] = answer
 
 
     def build_vocab(self, vocab_label) -> None:
@@ -174,6 +201,9 @@ class OlafInput(Dataset):
 
             for word in question:
                 self.question_vocab.add(word)
+            
+            if sample['anser'] not in self.answer_vocab:
+                self.answer_vocab.append(sample['anser'])
         
         current_question = self.current_question.split(' ')
         if current_question[-1] == "?":
@@ -182,9 +212,7 @@ class OlafInput(Dataset):
                 self.question_vocab.add(word)
             
         self.word_to_idx = {word: i for i, word in enumerate(self.question_vocab)}
-        
-        # Since answers are only one word we didn't need to first convert it in a list.
-        self.answer_vocab.add(sample['anser'])
+
         
         
 
@@ -348,12 +376,16 @@ class OlafInput(Dataset):
             
             idxs = [self.word_to_idx[w] for w in question]
             ques = torch.tensor(idxs, dtype=torch.long)
+
+            label = ids_to_multinomial(self.current_answer, self.answer_vocab)
+            label = torch.from_numpy(np.array(label)).long()
         
             single_sample = {
                 'audio': vggish_audio_feature, 
                 'visual_posi': visual_posi,
                 'visual_nega': visual_nega,
-                'question': ques
+                'question': ques,
+                'label': label
             }
 
             if self.transform:
@@ -396,6 +428,7 @@ if __name__ == "__main__":
         vocab_label="/scratch/vtyagi14/data/json/avqa-test.json",
         audio_vggish_features_dir="/scratch/vtyagi14/data/feats/vggish",
         video_res14x14_dir="/scratch/vtyagi14/data/feats/res18_14x14",
+        current_answer='one',
         transform=transforms.Compose([ToTensor()]),
         current_question = "How many instruments are sounding in the video?",
         olaf_context=olaf_context,

@@ -273,10 +273,19 @@ def main(frontend_dev):
     }
 
     # XXX Take user input instead of harcoding.
-    yt_urls = ["https://www.youtube.com/watch?v=6gQ7m0c4ReI","https://youtu.be/is68rlOzEio", "https://www.youtube.com/watch?v=nK1r_9hPWuI"]
+    yt_urls = [
+        "https://www.youtube.com/watch?v=6gQ7m0c4ReI",
+        "https://youtu.be/is68rlOzEio",
+        "https://www.youtube.com/watch?v=nK1r_9hPWuI",
+        "https://youtu.be/5sHwuARMXj0",
+        "https://youtu.be/zcyatK8qc7c",
+        "https://youtu.be/3dOATkCOguI",
+        "https://youtu.be/UswDvaaKRU4",
+        "https://youtu.be/mQpzKwSxiOw",
+        "https://youtu.be/NqSKXimnl6Y",
+        "https://youtu.be/P3LjmYl4Yd8"
+    ]
     yt_url = st.selectbox("Please select a video to be play", options=yt_urls)
-
-    preprocess_youtube_video(yt_url, frontend_dev)
     # pprint(st.session_state.get(yt_url))
 
     # video_uri = st.session_state[yt_url].get('raw_video')
@@ -302,43 +311,50 @@ def main(frontend_dev):
 
                     placeholder.text(transcription)
                 else:
-                     placeholder.text("Testing Frontend code")
-    
-    # Getting Olafdataset
-    placeholder = st.empty()
-    with st.spinner('Getting response from MUSIC_AVQA Model...'):
-        olaf_context = st.session_state[yt_url]
-        olaf_input_obj = OlafInput(
-            vocab_label="/scratch/vtyagi14/data/json/avqa-test.json",
-            audio_vggish_features_dir="/scratch/vtyagi14/data/feats/vggish",
-            video_res14x14_dir="/scratch/vtyagi14/data/feats/res18_14x14",
-            transform=transforms.Compose([ToTensor()]),
-            current_question = "How many instruments are sounding in the video?",
-            olaf_context=olaf_context,
-            is_batch = False
-        )
-        model = AVQA_Fusion_Net()
-        model = nn.DataParallel(model)
-        model = model.to('cuda')
-        test_loader = DataLoader(olaf_input_obj, batch_size=1, pin_memory=True)
-        model.load_state_dict(torch.load("net_grd_avst/avst_models/avst.pt"))
-        model.eval()
-        with torch.no_grad():
-            for batch_idx, sample in enumerate(test_loader):
-                print(f"Vishakha batch id here is {batch_idx}")
-            # sample = olaf_input_obj.__getitem__(0)
-                audio,visual_posi,visual_nega, question = sample['audio'].to('cuda'), sample['visual_posi'].to('cuda'),sample['visual_nega'].to('cuda'), sample['question'].to('cuda')
-                preds_qa,out_match_posi,out_match_nega = model(audio, visual_posi,visual_nega, question)
-                preds = preds_qa
-                # import tensorflow as tf
-                print(preds)
-                with tf.Session() as sess:
-                    print(preds.eval()) 
-                _, predicted = torch.max(preds.data, 1)
-                st.text(type(preds))
-                st.text(preds)
-                st.text(predicted)
-                olaf_input_obj.answer_vocab.get()
+                    placeholder.text("Testing Frontend code")
+        preprocess_youtube_video(yt_url, frontend_dev)
+        # Getting Olafdataset
+        placeholder_2 = st.empty()
+        with st.spinner('Getting response from MUSIC_AVQA Model...'):
+            olaf_context = st.session_state[yt_url]
+            olaf_input_obj = OlafInput(
+                vocab_label="/scratch/vtyagi14/data/json/avqa-test.json",
+                audio_vggish_features_dir="/scratch/vtyagi14/data/feats/vggish",
+                video_res14x14_dir="/scratch/vtyagi14/data/feats/res18_14x14",
+                current_answer='one',
+                transform=transforms.Compose([ToTensor()]),
+                # current_question = transcription,
+                current_question = "How many instruments are being played?",
+                olaf_context=olaf_context,
+                is_batch = False
+            )
+            # answer_labels = olaf_input_obj.answer_label
+            model = AVQA_Fusion_Net()
+            model = nn.DataParallel(model)
+            model = model.to('cuda')
+            test_loader = DataLoader(olaf_input_obj, batch_size=1, pin_memory=True)
+            model.load_state_dict(torch.load("net_grd_avst/avst_models/avst.pt"))
+            model.eval()
+            with torch.no_grad():
+                for batch_idx, sample in enumerate(test_loader):
+                    print(f"Vishakha batch id here is {batch_idx}")
+                    audio = sample['audio'].to('cuda')
+                    visual_posi = sample['visual_posi'].to('cuda')
+                    visual_nega = sample['visual_nega'].to('cuda')
+                    question = sample['question'].to('cuda')
+                    target = sample['label'].to('cuda')
+                    preds_qa,out_match_posi,out_match_nega = model(audio, visual_posi,visual_nega, question)
+                    preds = preds_qa
+                    # print(preds)
+                    _, predicted = torch.max(preds.data, 1)
+                    is_correct = target == predicted
+
+                    print(type(preds))
+                    print(preds)
+                    print(predicted)
+                    placeholder_2.write(is_correct)
+
+                    # answers = list(olaf_input_obj.answer_vocab)
 
 
 
