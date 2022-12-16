@@ -140,6 +140,13 @@ class AVQA_Fusion_Net(nn.Module):
         ## audio-visual grounding posi
         audio_feat_aa = audio_feat.unsqueeze(-1)                        # [B*T, C, 1]
         audio_feat_aa = nn.functional.normalize(audio_feat_aa, dim=1)   # [B*T, C, 1]
+        if visual_feat_posi.shape[0] != audio_feat_aa.shape[0]:
+            print("Vishakha shapes are different")
+            if visual_feat_posi.shape[0] > audio_feat_aa.shape[0]:
+                visual_feat_posi = visual_feat_posi[:-1, :]
+                visual_feat_before_grounding_posi = visual_feat_before_grounding_posi[:-1, :]
+
+
         x2_va = torch.matmul(visual_feat_posi, audio_feat_aa).squeeze() # [B*T, HxW]
 
         x2_p = F.softmax(x2_va, dim=-1).unsqueeze(-2)                       # [B*T, 1, HxW]
@@ -168,6 +175,12 @@ class AVQA_Fusion_Net(nn.Module):
         v_feat = temp_visual.view(B, C, H * W)  # [B*T, C, HxW]
         v_feat = v_feat.permute(0, 2, 1)        # [B, HxW, C]
         visual_feat_nega = nn.functional.normalize(v_feat, dim=2)
+
+        if visual_feat_nega.shape[0] != audio_feat_aa.shape[0]:
+            # print("Vishakha shapes are different")
+            if visual_feat_nega.shape[0] > audio_feat_aa.shape[0]:
+                visual_feat_nega = visual_feat_nega[:-1, :]
+                visual_feat_before_grounding_nega = visual_feat_before_grounding_nega[:-1, :]
 
         ##### av grounding nega
         x2_va = torch.matmul(visual_feat_nega, audio_feat_aa).squeeze()

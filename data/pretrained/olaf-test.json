@@ -319,7 +319,7 @@
         "question_id": 14,
         "type": "[\"Visual\", \"Location\"]",
         "question_content": "What kind of instrument is the <LRer> instrument? ",
-        "templ_values": "[\"lefttest\"]",
+        "templ_values": "[\"leftest\"]",
         "question_deleted": 0,
         "anser": "bass"
     },
