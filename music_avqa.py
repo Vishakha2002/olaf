@@ -497,6 +497,8 @@ class OlafBatchInput(Dataset):
             if visual_nega_out_res18.shape[0] < neg_frame_flag:
                 print(f"Vishakha visual_nega_out_res18 shape {visual_nega_out_res18.shape[0]} and neg_frame_flag {neg_frame_flag}")
                 neg_frame_flag = neg_frame_flag - 10
+                if neg_frame_flag == 50:
+                    neg_frame_flag = 49
                 print(f"Vishakha after neg_frame_flag {neg_frame_flag}")
             visual_nega_clip = visual_nega_out_res18[neg_frame_flag, :, :, :].unsqueeze(
                 0

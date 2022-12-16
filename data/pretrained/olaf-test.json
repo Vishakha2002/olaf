@@ -321,7 +321,7 @@
         "question_content": "What kind of instrument is the <LRer> instrument? ",
         "templ_values": "[\"leftest\"]",
         "question_deleted": 0,
-        "anser": "bass"
+        "anser": "electric_bass"
     },
     {
         "video_id": "Michigan_Arab_Orchestra_Takht_Ensemble__Qanun_Taqasim___",
@@ -366,14 +366,14 @@
         "question_content": "What kind of instrument is the <LRer> instrument? ",
         "templ_values": "[\"rightest\"]",
         "question_deleted": 0,
-        "anser": "bass"
+        "anser": "electric_bass"
     },
     {
         "video_id": "2CELLOS__Smooth_Criminal_Live_at_Suntory_Hall_Tokyo",
         "question_id": 20,
         "type": "[\"Audio-Visual\", \"Counting\"]",
         "question_content": "How many sounding <Object> in the video?",
-        "templ_values": "[\"bass\"]",
+        "templ_values": "[\"electric_bass\"]",
         "question_deleted": 0,
         "anser": "two"
     },
@@ -382,7 +382,7 @@
         "question_id": 1677,
         "type": "[\"Audio-Visual\", \"Existential\"]",
         "question_content": "Is the <Object> in the video always playing?",
-        "templ_values": "[\"bass\"]",
+        "templ_values": "[\"electric_bass\"]",
         "question_deleted": 0,
         "anser": "no"
     },
@@ -499,7 +499,7 @@
         "question_id": 15535,
         "type": "[\"Visual\", \"Counting\"]",
         "question_content": "How many <Object> are in the entire video?",
-        "templ_values": "[\"bass\"]",
+        "templ_values": "[\"electric_bass\"]",
         "question_deleted": 0,
         "anser": "one"
     },
@@ -807,7 +807,7 @@
         "question_content": "What kind of instrument is the <LRer> instrument? ",
         "templ_values": "[\"righttest\"]",
         "question_deleted": 0,
-        "anser": "bass"
+        "anser": "electric_bass"
     },
     {
         "video_id": "Una_panthera_by_Johannes_Ciconia_CWRU_Medieval_Ensemble",
