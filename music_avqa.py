@@ -414,8 +414,219 @@ class OlafInput(Dataset):
         # XXX Vishakha this code is almost implement at the following link.
         # https://github.com/GeWu-Lab/MUSIC-AVQA/blob/main/net_grd_avst/dataloader_avst.py#L121
 
-    def make_sample(self):
-        pass
+
+class OlafBatchInput(Dataset):
+    def __init__(
+        self, label, audio_dir, video_res14x14_dir, transform=None, mode_flag="train"
+    ):
+        samples = json.load(open("./data/pretrained/avqa-train.json", "r"))
+
+        # nax =  nne
+        ques_vocab = ["<pad>"]
+        ans_vocab = []
+        i = 0
+        for sample in samples:
+            i += 1
+            question = sample["question_content"].rstrip().split(" ")
+            question[-1] = question[-1][:-1]
+
+            p = 0
+            for pos in range(len(question)):
+                if "<" in question[pos]:
+                    question[pos] = ast.literal_eval(sample["templ_values"])[p]
+                    p += 1
+
+            for wd in question:
+                if wd not in ques_vocab:
+                    ques_vocab.append(wd)
+            if sample["anser"] not in ans_vocab:
+                ans_vocab.append(sample["anser"])
+
+        self.ques_vocab = ques_vocab
+        self.ans_vocab = ans_vocab
+        self.word_to_ix = {word: i for i, word in enumerate(self.ques_vocab)}
+
+        self.samples = json.load(open(label, "r"))
+        self.max_len = 14  # question length
+
+        self.audio_dir = audio_dir
+        self.video_res14x14_dir = video_res14x14_dir
+        self.transform = transform
+
+        video_list = []
+        for sample in self.samples:
+            video_name = sample["video_id"]
+            if video_name not in video_list:
+                video_list.append(video_name)
+
+        self.video_list = video_list
+        self.video_len = 60 * len(video_list)
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+
+        sample = self.samples[idx]
+        name = sample["video_id"]
+        audio = np.load(os.path.join(self.audio_dir, name + ".npy"))
+        audio = audio[::6, :]
+
+        # visual_out_res18_path = '/home/guangyao_li/dataset/avqa-features/visual_14x14'
+        visual_posi = np.load(os.path.join(self.video_res14x14_dir, name + ".npy"))
+
+        # visual_posi [60, 512, 14, 14], select 10 frames from one video
+        visual_posi = visual_posi[::6, :]
+        video_idx = self.video_list.index(name)
+
+        for i in range(visual_posi.shape[0]):
+            while 1:
+                neg_frame_id = random.randint(0, self.video_len - 1)
+                if int(neg_frame_id / 60) != video_idx:
+                    break
+
+            neg_video_id = int(neg_frame_id / 60)
+            neg_frame_flag = neg_frame_id % 60
+            neg_video_name = self.video_list[neg_video_id]
+            visual_nega_out_res18 = np.load(
+                os.path.join(self.video_res14x14_dir, neg_video_name + ".npy")
+            )
+
+            visual_nega_out_res18 = torch.from_numpy(visual_nega_out_res18)
+            visual_nega_clip = visual_nega_out_res18[neg_frame_flag, :, :, :].unsqueeze(
+                0
+            )
+
+            if i == 0:
+                visual_nega = visual_nega_clip
+            else:
+                visual_nega = torch.cat((visual_nega, visual_nega_clip), dim=0)
+
+        # visual nega [60, 512, 14, 14]
+
+        # question
+        question_id = sample["question_id"]
+        question = sample["question_content"].rstrip().split(" ")
+        question[-1] = question[-1][:-1]
+
+        p = 0
+        for pos in range(len(question)):
+            if "<" in question[pos]:
+                question[pos] = ast.literal_eval(sample["templ_values"])[p]
+                p += 1
+        if len(question) < self.max_len:
+            n = self.max_len - len(question)
+            for i in range(n):
+                question.append("<pad>")
+        idxs = [self.word_to_ix[w] for w in question]
+        ques = torch.tensor(idxs, dtype=torch.long)
+
+        # answer
+        answer = sample["anser"]
+        label = ids_to_multinomial(answer, self.ans_vocab)
+        label = torch.from_numpy(np.array(label)).long()
+
+        sample = {
+            "audio": audio,
+            "visual_posi": visual_posi,
+            "visual_nega": visual_nega,
+            "question": ques,
+            "label": label,
+        }
+
+        if self.transform:
+            sample = self.transform(sample)
+
+        return sample
+
+
+def test(model, val_loader):
+    model.eval()
+    total = 0
+    correct = 0
+    samples = json.load(open("./data/json/avqa-test.json", "r"))
+    A_count = []
+    A_cmp = []
+    V_count = []
+    V_loc = []
+    AV_ext = []
+    AV_count = []
+    AV_loc = []
+    AV_cmp = []
+    AV_temp = []
+    with torch.no_grad():
+        for batch_idx, sample in enumerate(val_loader):
+            audio, visual_posi, visual_nega, target, question = (
+                sample["audio"].to("cuda"),
+                sample["visual_posi"].to("cuda"),
+                sample["visual_nega"].to("cuda"),
+                sample["label"].to("cuda"),
+                sample["question"].to("cuda"),
+            )
+
+            preds_qa, out_match_posi, out_match_nega = model(
+                audio, visual_posi, visual_nega, question
+            )
+            preds = preds_qa
+            _, predicted = torch.max(preds.data, 1)
+
+            total += preds.size(0)
+            correct += (predicted == target).sum().item()
+
+            x = samples[batch_idx]
+            type = ast.literal_eval(x["type"])
+            if type[0] == "Audio":
+                if type[1] == "Counting":
+                    A_count.append((predicted == target).sum().item())
+                elif type[1] == "Comparative":
+                    A_cmp.append((predicted == target).sum().item())
+            elif type[0] == "Visual":
+                if type[1] == "Counting":
+                    V_count.append((predicted == target).sum().item())
+                elif type[1] == "Location":
+                    V_loc.append((predicted == target).sum().item())
+            elif type[0] == "Audio-Visual":
+                if type[1] == "Existential":
+                    AV_ext.append((predicted == target).sum().item())
+                elif type[1] == "Counting":
+                    AV_count.append((predicted == target).sum().item())
+                elif type[1] == "Location":
+                    AV_loc.append((predicted == target).sum().item())
+                elif type[1] == "Comparative":
+                    AV_cmp.append((predicted == target).sum().item())
+                elif type[1] == "Temporal":
+                    AV_temp.append((predicted == target).sum().item())
+
+    print("Audio Counting Accuracy: %.2f %%" % (100 * sum(A_count) / len(A_count)))
+    print("Audio Cmp Accuracy: %.2f %%" % (100 * sum(A_cmp) / len(A_cmp)))
+    print(
+        "Audio Accuracy: %.2f %%"
+        % (100 * (sum(A_count) + sum(A_cmp)) / (len(A_count) + len(A_cmp)))
+    )
+    print("Visual Counting Accuracy: %.2f %%" % (100 * sum(V_count) / len(V_count)))
+    print("Visual Loc Accuracy: %.2f %%" % (100 * sum(V_loc) / len(V_loc)))
+    print(
+        "Visual Accuracy: %.2f %%"
+        % (100 * (sum(V_count) + sum(V_loc)) / (len(V_count) + len(V_loc)))
+    )
+    print("AV Ext Accuracy: %.2f %%" % (100 * sum(AV_ext) / len(AV_ext)))
+    print("AV counting Accuracy: %.2f %%" % (100 * sum(AV_count) / len(AV_count)))
+    print("AV Loc Accuracy: %.2f %%" % (100 * sum(AV_loc) / len(AV_loc)))
+    print("AV Cmp Accuracy: %.2f %%" % (100 * sum(AV_cmp) / len(AV_cmp)))
+    print("AV Temporal Accuracy: %.2f %%" % (100 * sum(AV_temp) / len(AV_temp)))
+
+    print(
+        "AV Accuracy: %.2f %%"
+        % (
+            100
+            * (sum(AV_count) + sum(AV_loc) + sum(AV_ext) + sum(AV_temp) + sum(AV_cmp))
+            / (len(AV_count) + len(AV_loc) + len(AV_ext) + len(AV_temp) + len(AV_cmp))
+        )
+    )
+
+    print("Overall Accuracy: %.2f %%" % (100 * correct / total))
+
+    return 100 * correct / total
 
 
 if __name__ == "__main__":

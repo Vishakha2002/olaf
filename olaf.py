@@ -7,12 +7,14 @@ import os
 import re
 import time
 from io import BytesIO
+
 # from pprint import pprint
 # from tkinter import Y
 
 import numpy as np
 import streamlit as st
 import streamlit.components.v1 as components
+
 # import tensorflow as tf
 import torch
 import torch.nn as nn
@@ -22,9 +24,8 @@ from pytube import YouTube
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from audio_feature.extract_audio_vggish_feat import \
-    generate_audio_vggish_features
-from music_avqa import OlafInput, ToTensor
+from audio_feature.extract_audio_vggish_feat import generate_audio_vggish_features
+from music_avqa import OlafInput, OlafBatchInput, ToTensor, test
 from net_grd_avst.net_avst import AVQA_Fusion_Net
 from video_feature.extract_resnet18_14x14 import extract_video_feature
 
@@ -36,7 +37,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "1"  # set gpu number
 def whisper_transcription(audio_file):
     model = whisper.load_model("base")
     result = model.transcribe(audio_file)
-    pprint(result)
+    # pprint(result)
     return result["text"]
 
 
@@ -282,7 +283,7 @@ def preprocess_youtube_video(yt_url, frontend_dev):
         # st.write(st.session_state[yt_url])
 
 
-def run_batch_processing(frontend_dev):
+def run_batch_pre_processing(frontend_dev):
     """
         XXX Questions for video 19   // Video 19
     //   {
@@ -356,17 +357,40 @@ def run_batch_processing(frontend_dev):
         "https://youtu.be/1Asc6IaPunU",  # Video16
         "https://youtu.be/l0JKkmztuRE",  # Video17
         "https://youtu.be/pxoW-00Zyho",  # Video18
-        "https://www.youtube.com/watch?v=W37hiyMDJnE",  # Video19
+        # "https://youtu.be/W37hiyMDJnE",  # Video19
         "https://youtu.be/WRe2sz5l9JE",  # Video20
     ]
     video_count = len(yt_urls)
     placeholder = st.empty()
-    with st.spinner(f"Starting batch processing on {video_count} youtube videos..."):
+    with st.spinner(
+        f"Starting batch pre processing on {video_count} youtube videos..."
+    ):
         for count, url in enumerate(yt_urls):
             placeholder.write(f"Preprocessing url {count+1}/{video_count}. Url - {url}")
             preprocess_youtube_video(url, frontend_dev)
 
-    placeholder.write(f"Batch processing of {video_count} videos finished successfully")
+    placeholder.write(
+        f"Batch pre processing of {video_count} videos finished successfully"
+    )
+
+
+def run_batch_through_avqa_model():
+    test_dataset = OlafBatchInput(
+        label="./data/pretrained/olaf-test.json",
+        audio_dir="/home/vishakha/olaf/data/features/audio_vggish",
+        video_res14x14_dir="/home/vishakha/olaf/data/features/video_resnet18",
+        transform=transforms.Compose([ToTensor()]),
+        mode_flag="test",
+    )
+    print(test_dataset.__len__())
+    test_loader = DataLoader(
+        test_dataset, batch_size=1, shuffle=False, num_workers=4, pin_memory=True
+    )
+    model = AVQA_Fusion_Net()
+    model = nn.DataParallel(model)
+    model = model.to("cuda")
+    model.load_state_dict(torch.load("net_grd_avst/avst_models/avst.pt"))
+    test(model, test_loader)
 
 
 def main(frontend_dev):
@@ -402,9 +426,11 @@ def main(frontend_dev):
     }
 
     if is_batch:
-        run_batch_processing(frontend_dev)
+        run_batch_pre_processing(frontend_dev)
+        run_batch_through_avqa_model(frontend_dev)
 
     else:
+        olaf_pre_process_context = {}
         yt_urls = [
             "https://www.youtube.com/watch?v=6gQ7m0c4ReI",
             "https://youtu.be/is68rlOzEio",
@@ -415,9 +441,14 @@ def main(frontend_dev):
         yt_url = st.selectbox("Please select a video to be play", options=yt_urls)
 
         # video_uri = st.session_state[yt_url].get('raw_video')
+        with st.spinner("Pre processing video..."):
+            preprocess_youtube_video(yt_url, frontend_dev)
+        with open("data/preprocessed_urls_metadata.txt") as my_file:
+            olaf_pre_process_context = json.load(my_file)
+
         if frontend_dev:
             st.write(
-                f"Here the vide is saved at {st.session_state[yt_url]['raw_video']}"
+                f"Here the vide is saved at {olaf_pre_process_context[yt_url]['raw_video']}"
             )
 
         av_player_parent_dir = os.path.dirname(os.path.abspath(__file__))
@@ -445,14 +476,14 @@ def main(frontend_dev):
                         placeholder.text(transcription)
                     else:
                         placeholder.text("Testing Frontend code")
-            preprocess_youtube_video(yt_url, frontend_dev)
+
             # Getting Olafdataset
             placeholder_2 = st.empty()
             with st.spinner("Getting response from MUSIC_AVQA Model..."):
                 # olaf_context = st.session_state[yt_url]
-                olaf_context = {}
-                with open("data/preprocessed_urls_metadata.txt") as my_file:
-                    olaf_context = json.load(my_file).get(yt_url)
+                # olaf_context = {}
+                # with open("data/preprocessed_urls_metadata.txt") as my_file:
+                #     olaf_context = json.load(my_file).get(yt_url)
 
                 olaf_input_obj = OlafInput(
                     vocab_label="/scratch/vtyagi14/data/json/avqa-test.json",
@@ -462,7 +493,7 @@ def main(frontend_dev):
                     transform=transforms.Compose([ToTensor()]),
                     # current_question = transcription,
                     current_question="How many instruments are being played?",
-                    olaf_context=olaf_context,
+                    olaf_context=olaf_pre_process_context,
                     is_batch=False,
                 )
                 # answer_labels = olaf_input_obj.answer_label

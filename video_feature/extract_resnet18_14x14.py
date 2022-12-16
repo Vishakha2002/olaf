@@ -71,7 +71,7 @@ def extract_feats(model, framepath, load_image_fn):
         visual_out = model(select_img.cuda())
     fea = visual_out.cpu().numpy()
 
-    print('fea shape', fea.shape)
+    print('Feature shape', fea.shape)
     np.save(outfile, fea)
 
     return outfile
