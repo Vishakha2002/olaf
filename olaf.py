@@ -427,7 +427,7 @@ def main(frontend_dev):
 
     if is_batch:
         run_batch_pre_processing(frontend_dev)
-        run_batch_through_avqa_model(frontend_dev)
+        run_batch_through_avqa_model()
 
     else:
         olaf_pre_process_context = {}
