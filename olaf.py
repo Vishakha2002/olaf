@@ -2,32 +2,31 @@
 https://github.com/suyashkumar/ssl-proxy If you need reverse proxy in front of streamlit server
 """
 
-import re
 import json
 import os
+import re
 import time
-from tkinter import Y
-import streamlit.components.v1 as components
-import streamlit as st
-
 from io import BytesIO
+# from pprint import pprint
+# from tkinter import Y
+
 import numpy as np
-import whisper
-from pprint import pprint
-from pytube import YouTube
-from moviepy.editor import VideoFileClip
-
+import streamlit as st
+import streamlit.components.v1 as components
+# import tensorflow as tf
 import torch
-from torchvision import transforms
 import torch.nn as nn
+import whisper
+from moviepy.editor import VideoFileClip
+from pytube import YouTube
 from torch.utils.data import DataLoader
+from torchvision import transforms
+
+from audio_feature.extract_audio_vggish_feat import \
+    generate_audio_vggish_features
+from music_avqa import OlafInput, ToTensor
 from net_grd_avst.net_avst import AVQA_Fusion_Net
-import tensorflow as tf
-
-from audio_feature.extract_audio_vggish_feat import generate_audio_vggish_features
 from video_feature.extract_resnet18_14x14 import extract_video_feature
-from music_avqa import ToTensor, OlafInput
-
 
 # This we are doing for vggish
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
@@ -500,13 +499,16 @@ def main(frontend_dev):
 def setup_directory() -> None:
     """
     Before you begin setup data directories
-    data/raw_audio      : Path for extracted Audio from the youtube video
-    data/raw_video      : Path for downloaded Video from youtube
+    data/raw_audio                      : Path for extracted Audio from the youtube video
+    data/raw_video                      : Path for downloaded Video from youtube
     data/frames/audio
-    data/frames/video   :  Path for extracted frames from video
-    data/features/audio_vggish: Path for extracted VGGish features from audia waveform
-    data/features/video_resnet18: PAth for extracted Video features using resent features
-    data/user_question  : Path to store user question audio
+    data/frames/video                   : Path for extracted frames from video
+    data/features/audio_vggish          : Path for extracted VGGish features from audia waveform
+    data/features/video_resnet18        : PAth for extracted Video features using resent features
+    data/user_question                  : Path to store user question audio
+    data/preprocessed_urls.txt          : Path to append preprocessed yt urls
+    data/preprocessed_urls_metadata.txt : Path to add preprocessing metadata for a processed yt url
+
     """
     if not os.path.exists("data/raw_audio"):
         os.makedirs("data/raw_audio")

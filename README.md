@@ -125,3 +125,7 @@ then extract it using
 `tar xvf ffmpeg-git-i686-static.tar.xz`
 Finally add it to the os path
 `export PATH=/home/vishakha/olaf/ffmpeg-git-20220910-i686-static:$PATH`
+
+
+## How to open port in linux
+https://www.digitalocean.com/community/tutorials/opening-a-port-on-linux
