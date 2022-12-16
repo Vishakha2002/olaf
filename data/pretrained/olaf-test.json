@@ -1,0 +1,857 @@
+[
+    {
+        "video_id": "Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video",
+        "question_id": 8,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many instruments are sounding in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "one"
+    },
+    {
+        "video_id": "Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video",
+        "question_id": 15,
+        "type": "[\"Visual\", \"Location\"]",
+        "question_content": "What kind of musical instrument is it?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "guitar"
+    },
+    {
+        "video_id": "Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video",
+        "question_id": 16,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many instruments in the video did not sound from beginning to end?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "zero"
+    },
+    {
+        "video_id": "Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video",
+        "question_id": 20,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many sounding <Object> in the video?",
+        "templ_values": "[\"guitar\"]",
+        "question_deleted": 0,
+        "anser": "one"
+    },
+    {
+        "video_id": "Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video",
+        "question_id": 1751,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is this sound from the instrument in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "yes"
+    },
+    {
+        "video_id": "Havana__Camila_Cabello_Flute_Cover",
+        "question_id": 140,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is the <Object> in the video always playing?",
+        "templ_values": "[\"flute\"]",
+        "question_deleted": 0,
+        "anser": "no"
+    },
+    {
+        "video_id": "Havana__Camila_Cabello_Flute_Cover",
+        "question_id": 157,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many types of musical instruments sound in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "two"
+    },
+    {
+        "video_id": "Havana__Camila_Cabello_Flute_Cover",
+        "question_id": 205,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is this sound from the instrument in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "yes"
+    },
+    {
+        "video_id": "Havana__Camila_Cabello_Flute_Cover",
+        "question_id": 216,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many instruments are sounding in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "one"
+    },
+    {
+        "video_id": "Havana__Camila_Cabello_Flute_Cover",
+        "question_id": 214,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is there a voiceover?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "no"
+    },
+    {
+        "video_id": "Karim_Nagi__Ensemble_Perform_Live",
+        "question_id": 216,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many instruments are sounding in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "four"
+    },
+    {
+        "video_id": "Karim_Nagi__Ensemble_Perform_Live",
+        "question_id": 18,
+        "type": "[\"Visual\", \"Location\"]",
+        "question_content": "What is the instrument on the <LR> of <Object>?",
+        "templ_values": "[\"right\", \"violin\"]",
+        "question_deleted": 0,
+        "anser": "flute"
+    },
+    {
+        "video_id": "Karim_Nagi__Ensemble_Perform_Live",
+        "question_id": 50,
+        "type": "[\"Audio-Visual\", \"Temporal\"]",
+        "question_content": "Where is the <FL> sounding instrument?",
+        "templ_values": "[\"first\"]",
+        "question_deleted": 0,
+        "anser": "right"
+    },
+    {
+        "video_id": "Karim_Nagi__Ensemble_Perform_Live",
+        "question_id": 1677,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is the <Object> in the video always playing?",
+        "templ_values": "[\"flute\"]",
+        "question_deleted": 0,
+        "anser": "no"
+    },
+    {
+        "video_id": "Karim_Nagi__Ensemble_Perform_Live",
+        "question_id": 1700,
+        "type": "[\"Visual\", \"Location\"]",
+        "question_content": "Where is the performance?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "indoor"
+    },
+    {
+        "video_id": "ANIM_Junior_Ensemble_of_Traditional_Afghan_Instruments__Sakina",
+        "question_id": 216,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many instruments are sounding in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "nine"
+    },
+    {
+        "video_id": "ANIM_Junior_Ensemble_of_Traditional_Afghan_Instruments__Sakina",
+        "question_id": 50,
+        "type": "[\"Audio-Visual\", \"Temporal\"]",
+        "question_content": "Where is the <FL> sounding instrument?",
+        "templ_values": "[\"first\"]",
+        "question_deleted": 0,
+        "anser": "right"
+    },
+    {
+        "video_id": "ANIM_Junior_Ensemble_of_Traditional_Afghan_Instruments__Sakina",
+        "question_id": 1700,
+        "type": "[\"Visual\", \"Location\"]",
+        "question_content": "Where is the performance?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "indoor"
+    },
+    {
+        "video_id": "ANIM_Junior_Ensemble_of_Traditional_Afghan_Instruments__Sakina",
+        "question_id": 157,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many types of musical instruments sound in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "seven"
+    },
+    {
+        "video_id": "ANIM_Junior_Ensemble_of_Traditional_Afghan_Instruments__Sakina",
+        "question_id": 16,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many instruments in the video did not sound from beginning to end?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "eight"
+    },
+    {
+        "video_id": "Chinese_Ensemble_Cheong_Hong",
+        "question_id": 8,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many instruments are sounding in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "five"
+    },
+    {
+        "video_id": "Chinese_Ensemble_Cheong_Hong",
+        "question_id": 1700,
+        "type": "[\"Visual\", \"Location\"]",
+        "question_content": "Where is the performance?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "indoor"
+    },
+    {
+        "video_id": "Chinese_Ensemble_Cheong_Hong",
+        "question_id": 16,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many instruments in the video did not sound from beginning to end?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "zero"
+    },
+    {
+        "video_id": "Chinese_Ensemble_Cheong_Hong",
+        "question_id": 27,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is there a voiceover?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "no"
+    },
+    {
+        "video_id": "Chinese_Ensemble_Cheong_Hong",
+        "question_id": 30,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is this sound from the instrument in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "yes"
+    },
+    {
+        "video_id": "Lamento_di_Tristano_e_Rotta_CWRU_Medieval_Ensemble",
+        "question_id": 8,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many instruments are sounding in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "seven"
+    },
+    {
+        "video_id": "Lamento_di_Tristano_e_Rotta_CWRU_Medieval_Ensemble",
+        "question_id": 1700,
+        "type": "[\"Visual\", \"Location\"]",
+        "question_content": "Where is the performance?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "indoor"
+    },
+    {
+        "video_id": "Lamento_di_Tristano_e_Rotta_CWRU_Medieval_Ensemble",
+        "question_id": 16,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many instruments in the video did not sound from beginning to end?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "six"
+    },
+    {
+        "video_id": "Lamento_di_Tristano_e_Rotta_CWRU_Medieval_Ensemble",
+        "question_id": 27,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is there a voiceover?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "no"
+    },
+    {
+        "video_id": "Lamento_di_Tristano_e_Rotta_CWRU_Medieval_Ensemble",
+        "question_id": 30,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is this sound from the instrument in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "yes"
+    },
+    {
+        "video_id": "Carol_of_the_Bells__Wells_Middle_School_Percussion_Ensemble",
+        "question_id": 216,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many instruments are sounding in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "eight"
+    },
+    {
+        "video_id": "Carol_of_the_Bells__Wells_Middle_School_Percussion_Ensemble",
+        "question_id": 1677,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is the <Object> in the video always playing?",
+        "templ_values": "[\"xylophone\"]",
+        "question_deleted": 0,
+        "anser": "yes"
+    },
+    {
+        "video_id": "Carol_of_the_Bells__Wells_Middle_School_Percussion_Ensemble",
+        "question_id": 157,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many types of musical instruments sound in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "four"
+    },
+    {
+        "video_id": "Carol_of_the_Bells__Wells_Middle_School_Percussion_Ensemble",
+        "question_id": 16,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many instruments in the video did not sound from beginning to end?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "seven"
+    },
+    {
+        "video_id": "Carol_of_the_Bells__Wells_Middle_School_Percussion_Ensemble",
+        "question_id": 14,
+        "type": "[\"Visual\", \"Location\"]",
+        "question_content": "What kind of instrument is the <LRer> instrument? ",
+        "templ_values": "[\"rightest\"]",
+        "question_deleted": 0,
+        "anser": "xylophone"
+    },
+    {
+        "video_id": "Michigan_Arab_Orchestra_Takht_Ensemble__Qanun_Taqasim___",
+        "question_id": 14,
+        "type": "[\"Visual\", \"Location\"]",
+        "question_content": "What kind of instrument is the <LRer> instrument? ",
+        "templ_values": "[\"lefttest\"]",
+        "question_deleted": 0,
+        "anser": "bass"
+    },
+    {
+        "video_id": "Michigan_Arab_Orchestra_Takht_Ensemble__Qanun_Taqasim___",
+        "question_id": 157,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many types of musical instruments sound in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "seven"
+    },
+    {
+        "video_id": "Michigan_Arab_Orchestra_Takht_Ensemble__Qanun_Taqasim___",
+        "question_id": 1677,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is the <Object> in the video always playing?",
+        "templ_values": "[\"flute\"]",
+        "question_deleted": 0,
+        "anser": "no"
+    },
+    {
+        "video_id": "Michigan_Arab_Orchestra_Takht_Ensemble__Qanun_Taqasim___",
+        "question_id": 1751,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is this sound from the instrument in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "no"
+    },
+    {
+        "video_id": "Michigan_Arab_Orchestra_Takht_Ensemble__Qanun_Taqasim___",
+        "question_id": 6471,
+        "type": "[\"Audio\", \"Counting\"]",
+        "question_content": "Is there a <Object> sound?",
+        "templ_values": "[\"clarinet\"]",
+        "question_deleted": 0,
+        "anser": "no"
+    },
+    {
+        "video_id": "2CELLOS__Smooth_Criminal_Live_at_Suntory_Hall_Tokyo",
+        "question_id": 14,
+        "type": "[\"Visual\", \"Location\"]",
+        "question_content": "What kind of instrument is the <LRer> instrument? ",
+        "templ_values": "[\"rightest\"]",
+        "question_deleted": 0,
+        "anser": "bass"
+    },
+    {
+        "video_id": "2CELLOS__Smooth_Criminal_Live_at_Suntory_Hall_Tokyo",
+        "question_id": 20,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many sounding <Object> in the video?",
+        "templ_values": "[\"bass\"]",
+        "question_deleted": 0,
+        "anser": "two"
+    },
+    {
+        "video_id": "2CELLOS__Smooth_Criminal_Live_at_Suntory_Hall_Tokyo",
+        "question_id": 1677,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is the <Object> in the video always playing?",
+        "templ_values": "[\"bass\"]",
+        "question_deleted": 0,
+        "anser": "no"
+    },
+    {
+        "video_id": "2CELLOS__Smooth_Criminal_Live_at_Suntory_Hall_Tokyo",
+        "question_id": 1751,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is this sound from the instrument in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "no"
+    },
+    {
+        "video_id": "2CELLOS__Smooth_Criminal_Live_at_Suntory_Hall_Tokyo",
+        "question_id": 6471,
+        "type": "[\"Audio\", \"Counting\"]",
+        "question_content": "Is there a <Object> sound?",
+        "templ_values": "[\"violin\"]",
+        "question_deleted": 0,
+        "anser": "no"
+    },
+    {
+        "video_id": "Dastan_Ensemble",
+        "question_id": 50,
+        "type": "[\"Audio-Visual\", \"Temporal\"]",
+        "question_content": "Where is the <FL> sounding instrument?",
+        "templ_values": "[\"first\"]",
+        "question_deleted": 0,
+        "anser": "middle"
+    },
+    {
+        "video_id": "Dastan_Ensemble",
+        "question_id": 157,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many types of musical instruments sound in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "five"
+    },
+    {
+        "video_id": "Dastan_Ensemble",
+        "question_id": 1751,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is this sound from the instrument in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "yes"
+    },
+    {
+        "video_id": "Dastan_Ensemble",
+        "question_id": 6471,
+        "type": "[\"Audio\", \"Counting\"]",
+        "question_content": "Is there a <Object> sound?",
+        "templ_values": "[\"clarinet\"]",
+        "question_deleted": 0,
+        "anser": "no"
+    },
+    {
+        "video_id": "Dastan_Ensemble",
+        "question_id": 1700,
+        "type": "[\"Visual\", \"Location\"]",
+        "question_content": "Where is the performance?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "indoor"
+    },
+    {
+        "video_id": "A_classicalstyle_ensemble_with_the_Roland_AE10_Aerophone_and_various_acoustic_wind_instruments",
+        "question_id": 15535,
+        "type": "[\"Visual\", \"Counting\"]",
+        "question_content": "How many <Object> are in the entire video?",
+        "templ_values": "[\"saxophone\"]",
+        "question_deleted": 0,
+        "anser": "eight"
+    },
+    {
+        "video_id": "A_classicalstyle_ensemble_with_the_Roland_AE10_Aerophone_and_various_acoustic_wind_instruments",
+        "question_id": 27,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is there a voiceover?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "no"
+    },
+    {
+        "video_id": "A_classicalstyle_ensemble_with_the_Roland_AE10_Aerophone_and_various_acoustic_wind_instruments",
+        "question_id": 216,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many instruments are sounding in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "nine"
+    },
+    {
+        "video_id": "A_classicalstyle_ensemble_with_the_Roland_AE10_Aerophone_and_various_acoustic_wind_instruments",
+        "question_id": 15501,
+        "type": "[\"Visual\", \"Location\"]",
+        "question_content": "What kind of instrument is the <LRer> instrument? ",
+        "templ_values": "[\"leftest\"]",
+        "question_deleted": 0,
+        "anser": "saxophone"
+    },
+    {
+        "video_id": "A_classicalstyle_ensemble_with_the_Roland_AE10_Aerophone_and_various_acoustic_wind_instruments",
+        "question_id": 15501,
+        "type": "[\"Visual\", \"Location\"]",
+        "question_content": "What kind of instrument is the <LRer> instrument? ",
+        "templ_values": "[\"righttest\"]",
+        "question_deleted": 0,
+        "anser": "saxophone"
+    },
+    {
+        "video_id": "Berea_College_Bluegrass_Ensemble_Performs_Carol_of_the_Bells",
+        "question_id": 15535,
+        "type": "[\"Visual\", \"Counting\"]",
+        "question_content": "How many <Object> are in the entire video?",
+        "templ_values": "[\"bass\"]",
+        "question_deleted": 0,
+        "anser": "one"
+    },
+    {
+        "video_id": "Berea_College_Bluegrass_Ensemble_Performs_Carol_of_the_Bells",
+        "question_id": 216,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many instruments are sounding in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "five"
+    },
+    {
+        "video_id": "Berea_College_Bluegrass_Ensemble_Performs_Carol_of_the_Bells",
+        "question_id": 1677,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is the <Object> in the video always playing?",
+        "templ_values": "[\"banjo\"]",
+        "question_deleted": 0,
+        "anser": "no"
+    },
+    {
+        "video_id": "Berea_College_Bluegrass_Ensemble_Performs_Carol_of_the_Bells",
+        "question_id": 15501,
+        "type": "[\"Visual\", \"Location\"]",
+        "question_content": "What kind of instrument is the <LRer> instrument? ",
+        "templ_values": "[\"righttest\"]",
+        "question_deleted": 0,
+        "anser": "violin"
+    },
+    {
+        "video_id": "Berea_College_Bluegrass_Ensemble_Performs_Carol_of_the_Bells",
+        "question_id": 20,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many sounding <Object> in the video?",
+        "templ_values": "[\"guitar\"]",
+        "question_deleted": 0,
+        "anser": "one"
+    },
+    {
+        "video_id": "Armandos_Rhumba__Adam_Rapa_and_CORNO_Brass_Ensemble_shorts",
+        "question_id": 15535,
+        "type": "[\"Visual\", \"Counting\"]",
+        "question_content": "How many <Object> are in the entire video?",
+        "templ_values": "[\"trumpet\"]",
+        "question_deleted": 0,
+        "anser": "eight"
+    },
+    {
+        "video_id": "Armandos_Rhumba__Adam_Rapa_and_CORNO_Brass_Ensemble_shorts",
+        "question_id": 216,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many instruments are sounding in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "ten"
+    },
+    {
+        "video_id": "Armandos_Rhumba__Adam_Rapa_and_CORNO_Brass_Ensemble_shorts",
+        "question_id": 1677,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is the <Object> in the video always playing?",
+        "templ_values": "[\"drum\"]",
+        "question_deleted": 0,
+        "anser": "yes"
+    },
+    {
+        "video_id": "Armandos_Rhumba__Adam_Rapa_and_CORNO_Brass_Ensemble_shorts",
+        "question_id": 15501,
+        "type": "[\"Visual\", \"Location\"]",
+        "question_content": "What kind of instrument is the <LRer> instrument? ",
+        "templ_values": "[\"righttest\"]",
+        "question_deleted": 0,
+        "anser": "trumpet"
+    },
+    {
+        "video_id": "Armandos_Rhumba__Adam_Rapa_and_CORNO_Brass_Ensemble_shorts",
+        "question_id": 20,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many sounding <Object> in the video?",
+        "templ_values": "[\"trumpet\"]",
+        "question_deleted": 0,
+        "anser": "eight"
+    },
+    {
+        "video_id": "Best_orchestra_prank_ever_the_funniest_trombone_section_WAIT_FOR_IT",
+        "question_id": 1677,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is the <Object> in the video always playing?",
+        "templ_values": "[\"drum\"]",
+        "question_deleted": 0,
+        "anser": "no"
+    },
+    {
+        "video_id": "Best_orchestra_prank_ever_the_funniest_trombone_section_WAIT_FOR_IT",
+        "question_id": 15501,
+        "type": "[\"Visual\", \"Location\"]",
+        "question_content": "What kind of instrument is the <LRer> instrument? ",
+        "templ_values": "[\"righttest\"]",
+        "question_deleted": 0,
+        "anser": "trumpet"
+    },
+    {
+        "video_id": "Best_orchestra_prank_ever_the_funniest_trombone_section_WAIT_FOR_IT",
+        "question_id": 1700,
+        "type": "[\"Visual\", \"Location\"]",
+        "question_content": "Where is the performance?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "indoor"
+    },
+    {
+        "video_id": "Best_orchestra_prank_ever_the_funniest_trombone_section_WAIT_FOR_IT",
+        "question_id": 1677,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is the <Object> in the video always playing?",
+        "templ_values": "[\"trumpet\"]",
+        "question_deleted": 0,
+        "anser": "yes"
+    },
+    {
+        "video_id": "Best_orchestra_prank_ever_the_funniest_trombone_section_WAIT_FOR_IT",
+        "question_id": 1751,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is this sound from the instrument in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "no"
+    },
+    {
+        "video_id": "Witches_Dance_Suzuki_Violin_Book_2_Alexandra_Heberle",
+        "question_id": 1677,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is the <Object> in the video always playing?",
+        "templ_values": "[\"violin\"]",
+        "question_deleted": 0,
+        "anser": "no"
+    },
+    {
+        "video_id": "Witches_Dance_Suzuki_Violin_Book_2_Alexandra_Heberle",
+        "question_id": 15501,
+        "type": "[\"Visual\", \"Location\"]",
+        "question_content": "What kind of instrument is the <LRer> instrument? ",
+        "templ_values": "[\"righttest\"]",
+        "question_deleted": 0,
+        "anser": "piano"
+    },
+    {
+        "video_id": "Witches_Dance_Suzuki_Violin_Book_2_Alexandra_Heberle",
+        "question_id": 15501,
+        "type": "[\"Visual\", \"Location\"]",
+        "question_content": "What kind of instrument is the <LRer> instrument? ",
+        "templ_values": "[\"righttest\"]",
+        "question_deleted": 0,
+        "anser": "voilin"
+    },
+    {
+        "video_id": "Witches_Dance_Suzuki_Violin_Book_2_Alexandra_Heberle",
+        "question_id": 1751,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is this sound from the instrument in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "yes"
+    },
+    {
+        "video_id": "Witches_Dance_Suzuki_Violin_Book_2_Alexandra_Heberle",
+        "question_id": 216,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many instruments are sounding in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "two"
+    },
+    {
+        "video_id": "Joshua_Bell_Peter_Dugan__Summertime_from_Porgy_and_Bess_Official_Video",
+        "question_id": 216,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many instruments are sounding in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "two"
+    },
+    {
+        "video_id": "Joshua_Bell_Peter_Dugan__Summertime_from_Porgy_and_Bess_Official_Video",
+        "question_id": 1677,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is the <Object> in the video always playing?",
+        "templ_values": "[\"voilin\"]",
+        "question_deleted": 0,
+        "anser": "no"
+    },
+    {
+        "video_id": "Joshua_Bell_Peter_Dugan__Summertime_from_Porgy_and_Bess_Official_Video",
+        "question_id": 157,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many types of musical instruments sound in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "two"
+    },
+    {
+        "video_id": "Joshua_Bell_Peter_Dugan__Summertime_from_Porgy_and_Bess_Official_Video",
+        "question_id": 16,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many instruments in the video did not sound from beginning to end?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "one"
+    },
+    {
+        "video_id": "Joshua_Bell_Peter_Dugan__Summertime_from_Porgy_and_Bess_Official_Video",
+        "question_id": 14,
+        "type": "[\"Visual\", \"Location\"]",
+        "question_content": "What kind of instrument is the <LRer> instrument? ",
+        "templ_values": "[\"rightest\"]",
+        "question_deleted": 0,
+        "anser": "voilin"
+    },
+    {
+        "video_id": "Escape_Artist__from_Beyond_Basic_Percussion",
+        "question_id": 1677,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is the <Object> in the video always playing?",
+        "templ_values": "[\"xylophone\"]",
+        "question_deleted": 0,
+        "anser": "yes"
+    },
+    {
+        "video_id": "Escape_Artist__from_Beyond_Basic_Percussion",
+        "question_id": 1751,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is this sound from the instrument in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "yes"
+    },
+    {
+        "video_id": "Escape_Artist__from_Beyond_Basic_Percussion",
+        "question_id": 14,
+        "type": "[\"Visual\", \"Location\"]",
+        "question_content": "What kind of instrument is the <LRer> instrument? ",
+        "templ_values": "[\"leftest\"]",
+        "question_deleted": 0,
+        "anser": "xylophone"
+    },
+    {
+        "video_id": "Escape_Artist__from_Beyond_Basic_Percussion",
+        "question_id": 50,
+        "type": "[\"Audio-Visual\", \"Temporal\"]",
+        "question_content": "Where is the <FL> sounding instrument?",
+        "templ_values": "[\"first\"]",
+        "question_deleted": 0,
+        "anser": "middle"
+    },
+    {
+        "video_id": "Escape_Artist__from_Beyond_Basic_Percussion",
+        "question_id": 214,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is there a voiceover?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "no"
+    },
+    {
+        "video_id": "Nothing_Else_Matters_Metallica__MOZART_HEROES_Official_Video",
+        "question_id": 50,
+        "type": "[\"Audio-Visual\", \"Temporal\"]",
+        "question_content": "Where is the <FL> sounding instrument?",
+        "templ_values": "[\"first\"]",
+        "question_deleted": 0,
+        "anser": "left"
+    },
+    {
+        "video_id": "Nothing_Else_Matters_Metallica__MOZART_HEROES_Official_Video",
+        "question_id": 157,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many types of musical instruments sound in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "two"
+    },
+    {
+        "video_id": "Nothing_Else_Matters_Metallica__MOZART_HEROES_Official_Video",
+        "question_id": 1751,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is this sound from the instrument in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "yes"
+    },
+    {
+        "video_id": "Nothing_Else_Matters_Metallica__MOZART_HEROES_Official_Video",
+        "question_id": 1677,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is the <Object> in the video always playing?",
+        "templ_values": "[\"guitar\"]",
+        "question_deleted": 0,
+        "anser": "yes"
+    },
+    {
+        "video_id": "Nothing_Else_Matters_Metallica__MOZART_HEROES_Official_Video",
+        "question_id": 15501,
+        "type": "[\"Visual\", \"Location\"]",
+        "question_content": "What kind of instrument is the <LRer> instrument? ",
+        "templ_values": "[\"righttest\"]",
+        "question_deleted": 0,
+        "anser": "bass"
+    },
+    {
+        "video_id": "Una_panthera_by_Johannes_Ciconia_CWRU_Medieval_Ensemble",
+        "question_id": 157,
+        "type": "[\"Audio-Visual\", \"Counting\"]",
+        "question_content": "How many types of musical instruments sound in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "three"
+    },
+    {
+        "video_id": "Una_panthera_by_Johannes_Ciconia_CWRU_Medieval_Ensemble",
+        "question_id": 1751,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is this sound from the instrument in the video?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "yes"
+    },
+    {
+        "video_id": "Una_panthera_by_Johannes_Ciconia_CWRU_Medieval_Ensemble",
+        "question_id": 1677,
+        "type": "[\"Audio-Visual\", \"Existential\"]",
+        "question_content": "Is the <Object> in the video always playing?",
+        "templ_values": "[\"voilin\"]",
+        "question_deleted": 0,
+        "anser": "yes"
+    },
+    {
+        "video_id": "Una_panthera_by_Johannes_Ciconia_CWRU_Medieval_Ensemble",
+        "question_id": 1700,
+        "type": "[\"Visual\", \"Location\"]",
+        "question_content": "Where is the performance?",
+        "templ_values": "[]",
+        "question_deleted": 0,
+        "anser": "indoor"
+    },
+    {
+        "video_id": "Una_panthera_by_Johannes_Ciconia_CWRU_Medieval_Ensemble",
+        "question_id": 15501,
+        "type": "[\"Visual\", \"Location\"]",
+        "question_content": "What kind of instrument is the <LRer> instrument? ",
+        "templ_values": "[\"leftest\"]",
+        "question_deleted": 0,
+        "anser": "voilin"
+    }
+]

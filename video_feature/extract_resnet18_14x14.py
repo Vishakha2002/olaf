@@ -80,6 +80,7 @@ def extract_feats(model, framepath, load_image_fn):
 def extract_video_feature(framepath):
     # XXX maybe needed in Super computer.
     # os.environ['CUDA_VISIBLE_DEVICES'] = "0, 1"
+    torch.cuda.empty_cache()
     
     pretrained_resnet_model = pretrainedmodels.resnet18(pretrained='imagenet')
     load_image_fn = utils.LoadTransformImage(pretrained_resnet_model)

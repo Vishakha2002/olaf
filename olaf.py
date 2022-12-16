@@ -24,17 +24,14 @@ from torch.utils.data import DataLoader
 from net_grd_avst.net_avst import AVQA_Fusion_Net
 import tensorflow as tf
 
-from  audio_feature.extract_audio_vggish_feat import generate_audio_vggish_features
+from audio_feature.extract_audio_vggish_feat import generate_audio_vggish_features
 from video_feature.extract_resnet18_14x14 import extract_video_feature
 from music_avqa import ToTensor, OlafInput
 
 
 # This we are doing for vggish
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-os.environ["CUDA_VISIBLE_DEVICES"] = "1" # set gpu number
-
-
-
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"  # set gpu number
 
 
 def whisper_transcription(audio_file):
@@ -49,9 +46,9 @@ def transcribe_question(video_event, default="assemblyai"):
     # XXX Vishakha move this to a temp file.
     audio_file = "data/user_question/question_audio.wav"
 
-    ind, val = zip(*video_event['arr'].items())
+    ind, val = zip(*video_event["arr"].items())
     ind = np.array(ind, dtype=int)  # convert to np array
-    val = np.array(val)             # convert to np array
+    val = np.array(val)  # convert to np array
     sorted_ints = val[ind]
     stream = BytesIO(b"".join([int(v).to_bytes(1, "big") for v in sorted_ints]))
     # This wav_bytes has the audio
@@ -60,7 +57,6 @@ def transcribe_question(video_event, default="assemblyai"):
     with open(audio_file, "wb") as binary_file:
         binary_file.write(wav_bytes)
     # audio = np.array(list(video_event['arr'].items()))
-    
 
     if default == "assemblyai":
         time.sleep(3)
@@ -70,17 +66,17 @@ def transcribe_question(video_event, default="assemblyai"):
         text = whisper_transcription(audio_file)
     else:
         text = "Not Implemented"
-    return text    
+    return text
 
 
 def parse_video_event(video_event):
     print(st.session_state.is_video_paused)
-    if video_event and video_event.get('name') == "onPause":
-            st.session_state.is_video_paused = True 
-            print("video got paused")
-    if video_event and video_event.get('name') == "onProgress":
+    if video_event and video_event.get("name") == "onPause":
+        st.session_state.is_video_paused = True
+        print("video got paused")
+    if video_event and video_event.get("name") == "onProgress":
         # print("Inside onProgres")
-        if video_event.get('data') and isinstance(video_event.get('data'), dict):
+        if video_event.get("data") and isinstance(video_event.get("data"), dict):
             frame_stopped_at = video_event["data"].get("playedSeconds")
             # print(f"you paused the video at {frame_stopped_at} session state {st.session_state.is_video_paused}")
             if st.session_state.is_video_paused:
@@ -96,9 +92,9 @@ def initialize_session_state():
     streamlit session state.
     """
     if "is_video_paused" not in st.session_state:
-        st.session_state['is_video_paused'] = False
-    if "frame_stopped_at" not in st.session_state:   
-        st.session_state['frame_stopped_at'] = 0
+        st.session_state["is_video_paused"] = False
+    if "frame_stopped_at" not in st.session_state:
+        st.session_state["frame_stopped_at"] = 0
 
 
 def extract_audio_features():
@@ -110,8 +106,8 @@ def extract_audio_features():
     We provide a TensorFlow definition of this model, which we call VGGish, as
     well as supporting code to extract input features for the model from audio
     waveforms and to post-process the model embedding output into the same format as
-    the released embedding features. 
-    
+    the released embedding features.
+
     VGGish can be used in two ways:
 
     As a feature extractor: VGGish converts audio input features into a
@@ -146,22 +142,21 @@ def extract_audio_features():
     !curl -O https://storage.googleapis.com/audioset/vggish_model.ckpt
     !curl -O https://storage.googleapis.com/audioset/vggish_pca_params.npz
 
-    we are going to download them in 
+    we are going to download them in
     $ ls
     models/
     vggish_model.ckpt
     vggish_pca_params.npz
-    
+
     """
     pass
 
 
 def get_audio_wav(audio_filename, video_path) -> str:
-    """
-    """
+    """ """
     raw_audio_dir = "data/raw_audio"
     saved_audio = os.path.join(os.getcwd(), raw_audio_dir, audio_filename)
-    
+
     if audio_filename not in os.listdir(raw_audio_dir):
         video = VideoFileClip(video_path)
         audio_file = video.audio
@@ -173,11 +168,11 @@ def get_audio_wav(audio_filename, video_path) -> str:
 
 def extract_frames(video, dst):
 
-    command1 = 'ffmpeg '
-    command1 += '-i ' + video + " "
-    command1 += '-y' + " "
+    command1 = "ffmpeg "
+    command1 += "-i " + video + " "
+    command1 += "-y" + " "
     command1 += "-r " + "1 "
-    command1 += '{0}/%06d.jpg'.format(dst)
+    command1 += "{0}/%06d.jpg".format(dst)
 
     print(command1)
 
@@ -200,8 +195,8 @@ def preprocess_youtube_video(yt_url, frontend_dev):
     """
     saved_audio = None
     yt_urls = []
-    
-    with open('data/preprocessed_urls.txt') as my_file:
+
+    with open("data/preprocessed_urls.txt") as my_file:
         yt_urls = [line.rstrip("\n") for line in my_file]
 
         if yt_url in yt_urls:
@@ -209,101 +204,170 @@ def preprocess_youtube_video(yt_url, frontend_dev):
             return
 
     video_object = YouTube(yt_url)
-    video_title = re.sub(r'[^A-Za-z0-9 ]+', '', video_object.title)
+    video_title = re.sub(r"[^A-Za-z0-9 ]+", "", video_object.title)
     video_title = video_title.replace(" ", "_")
     video_frame_path = os.path.join(os.getcwd(), "data/frames/video", video_title)
-    
+
     video_filename = video_title + ".mp4"
     audio_filename = video_title + ".wav"
 
     if yt_url not in st.session_state:
         extracted_frames = False
-        with st.spinner('Preprocessing: Video.'):
+        with st.spinner("Preprocessing: Video."):
             # start video download
-            saved_video = video_object.streams.filter(mime_type="video/mp4", res="720p").first().download(filename=video_filename, output_path="data/raw_video")
+            saved_video = (
+                video_object.streams.filter(mime_type="video/mp4", res="720p")
+                .first()
+                .download(filename=video_filename, output_path="data/raw_video")
+            )
             print(f"Downloaded video at {saved_video}")
 
             if not frontend_dev:
                 # Extract Audio from the saved video
-                saved_audio = get_audio_wav(audio_filename=audio_filename, video_path=saved_video)
+                saved_audio = get_audio_wav(
+                    audio_filename=audio_filename, video_path=saved_video
+                )
                 print(f"Extracted Audio saved at {saved_audio}")
 
                 # Here we will extract frames from the saved video file
                 try:
                     if not os.path.exists(video_frame_path):
-                        print(f"Creating a new folder for extracting video frames {video_frame_path}")
+                        print(
+                            f"Creating a new folder for extracting video frames {video_frame_path}"
+                        )
                         os.makedirs(video_frame_path)
                     frame_count = len(os.listdir(video_frame_path))
                     if frame_count == 0:
                         extract_frames(saved_video, video_frame_path)
                         frame_count = len(os.listdir(video_frame_path))
-                    print(f"Extracted Video frames saved at {video_frame_path}. Count: {frame_count}")
+                    print(
+                        f"Extracted Video frames saved at {video_frame_path}. Count: {frame_count}"
+                    )
                     extracted_frames = True
 
-                    vggish_audio_feature_file_path = generate_audio_vggish_features(saved_audio)
-                    resnet_video_feature_file_path = extract_video_feature(video_frame_path)
+                    vggish_audio_feature_file_path = generate_audio_vggish_features(
+                        saved_audio
+                    )
+                    resnet_video_feature_file_path = extract_video_feature(
+                        video_frame_path
+                    )
                 except Exception:
                     raise
-    
+
         preprocess_state = {
             "video_title": video_title,
             "raw_audio": saved_audio,
             "raw_video": saved_video,
             "video_frame_path": video_frame_path,
-            "vggish_audio_feature_file_path": os.path.join(os.getcwd(), vggish_audio_feature_file_path),
-            "resnet_video_feature_file_path": os.path.join(os.getcwd(),resnet_video_feature_file_path),
+            "vggish_audio_feature_file_path": os.path.join(
+                os.getcwd(), vggish_audio_feature_file_path
+            ),
+            "resnet_video_feature_file_path": os.path.join(
+                os.getcwd(), resnet_video_feature_file_path
+            ),
             "extracted_frames": extracted_frames,
         }
         # st.session_state[yt_url] = preprocess_state
         if yt_url not in yt_urls:
-            with open('data/preprocessed_urls.txt', 'a', encoding='utf-8') as my_file:
-                my_file.write(yt_url+'\n')
-            
-            with open('data/preprocessed_urls_metadata.txt') as my_file:
+            with open("data/preprocessed_urls.txt", "a", encoding="utf-8") as my_file:
+                my_file.write(yt_url + "\n")
+
+            with open("data/preprocessed_urls_metadata.txt") as my_file:
                 dictionary = json.load(my_file)
-            
+
             dictionary[yt_url] = preprocess_state
 
-            with open('data/preprocessed_urls_metadata.txt', "w") as outfile:
+            with open("data/preprocessed_urls_metadata.txt", "w") as outfile:
                 json.dump(dictionary, outfile)
 
         # st.write(st.session_state[yt_url])
 
 
 def run_batch_processing(frontend_dev):
+    """
+        XXX Questions for video 19   // Video 19
+    //   {
+    //         "video_id": "00000272",
+    //         "question_id": 50,
+    //         "type": "[\"Audio-Visual\", \"Temporal\"]",
+    //         "question_content": "Where is the <FL> sounding instrument?",
+    //         "templ_values": "[\"first\"]",
+    //         "question_deleted": 0,
+    //         "anser": "left"
+    //     },
+
+
+    //   {
+    //     "video_id": "00000259",
+    //     "question_id": 157,
+    //     "type": "[\"Audio-Visual\", \"Counting\"]",
+    //     "question_content": "How many types of musical instruments sound in the video?",
+    //     "templ_values": "[]",
+    //     "question_deleted": 0,
+    //     "anser": "two"
+    //   },
+
+    //   {
+    //     "video_id": "00007052",
+    //     "question_id": 1751,
+    //     "type": "[\"Audio-Visual\", \"Existential\"]",
+    //     "question_content": "Is this sound from the instrument in the video?",
+    //     "templ_values": "[]",
+    //     "question_deleted": 0,
+    //     "anser": "yes"
+    //   },
+    //   {
+    //     "video_id": "00001914",
+    //     "question_id": 1677,
+    //     "type": "[\"Audio-Visual\", \"Existential\"]",
+    //     "question_content": "Is the <Object> in the video always playing?",
+    //     "templ_values": "[\"bass\"]",
+    //     "question_deleted": 0,
+    //     "anser": "no"
+    //   },
+    //   {
+    //     "video_id": "00001753",
+    //     "question_id": 15501,
+    //     "type": "[\"Visual\", \"Location\"]",
+    //     "question_content": "What kind of instrument is the <LRer> instrument? ",
+    //     "templ_values": "[\"righttest\"]",
+    //     "question_deleted": 0,
+    //     "anser": "bass"
+    //   }
+     this needs to be removed later.
+    """
     yt_urls = [
-            "https://www.youtube.com/watch?v=6gQ7m0c4ReI",
-            "https://youtu.be/is68rlOzEio",
-            "https://youtu.be/5sHwuARMXj0",
-            "https://youtu.be/zcyatK8qc7c",
-            "https://youtu.be/3dOATkCOguI",
-            "https://youtu.be/2m9fqUQgzUA",
-            "https://youtu.be/mQpzKwSxiOw",
-            "https://youtu.be/NqSKXimnl6Y",
-            "https://youtu.be/P3LjmYl4Yd8",
-            # "https://youtu.be/R3SOHWhJ398",
-            # "https://youtu.be/MCO2-ikxe1I",
-            "https://youtu.be/rsJgPnWDflU",
-            "https://youtu.be/AHlG_PwwvGY",
-            "https://youtu.be/BIPTE84l9ls",
-            "https://youtu.be/iveZwfEhZYI",
-            "https://youtu.be/3dOATkCOguI",
-            "https://youtu.be/Oipg71dSem0",
-            "https://youtu.be/-PWiegZQfAY",
-            "https://youtu.be/1Asc6IaPunU",
-            "https://youtu.be/l0JKkmztuRE",
-            "https://youtu.be/pxoW-00Zyho",
-            "https://youtu.be/ZPdk5GaIDjo",
-            "https://youtu.be/WRe2sz5l9JE"
-        ]
+        "https://www.youtube.com/watch?v=6gQ7m0c4ReI",  # Video1
+        "https://youtu.be/is68rlOzEio",  # Video2
+        "https://youtu.be/5sHwuARMXj0",  # Video3
+        "https://youtu.be/zcyatK8qc7c",  # Video4
+        "https://youtu.be/3dOATkCOguI",  # Video5
+        "https://youtu.be/2m9fqUQgzUA",  # Video6
+        "https://youtu.be/mQpzKwSxiOw",  # Video7
+        "https://youtu.be/NqSKXimnl6Y",  # Video8
+        "https://youtu.be/P3LjmYl4Yd8",  # Video9
+        # "https://youtu.be/R3SOHWhJ398",
+        # "https://youtu.be/MCO2-ikxe1I",
+        "https://youtu.be/rsJgPnWDflU",  # Video10
+        "https://youtu.be/AHlG_PwwvGY",  # Video11
+        "https://youtu.be/BIPTE84l9ls",  # Video12
+        "https://youtu.be/iveZwfEhZYI",  # Video13
+        "https://youtu.be/Oipg71dSem0",  # Video14
+        "https://youtu.be/-PWiegZQfAY",  # Video15
+        "https://youtu.be/1Asc6IaPunU",  # Video16
+        "https://youtu.be/l0JKkmztuRE",  # Video17
+        "https://youtu.be/pxoW-00Zyho",  # Video18
+        "https://www.youtube.com/watch?v=W37hiyMDJnE",  # Video19
+        "https://youtu.be/WRe2sz5l9JE",  # Video20
+    ]
     video_count = len(yt_urls)
     placeholder = st.empty()
-    with st.spinner('Starting batch processing on {video_count} youtube videos...'):
+    with st.spinner(f"Starting batch processing on {video_count} youtube videos..."):
         for count, url in enumerate(yt_urls):
             placeholder.write(f"Preprocessing url {count+1}/{video_count}. Url - {url}")
             preprocess_youtube_video(url, frontend_dev)
-    
-    placeholder.write("Batch processing finished successfully")
+
+    placeholder.write(f"Batch processing of {video_count} videos finished successfully")
 
 
 def main(frontend_dev):
@@ -316,21 +380,26 @@ def main(frontend_dev):
         layout="wide",
     )
 
-    is_batch_input = st.radio(
-        "Is batch processing?",
-        ('Yes', 'No')
-    )
-    is_batch = is_batch_input == 'Yes'
+    is_batch_input = st.radio("Is batch processing?", ("Yes", "No"))
+    is_batch = is_batch_input == "Yes"
 
     # Setup for streamlit_player
     _SUPPORTED_EVENTS = [
-        "onStart", "onPlay", "onProgress", "onDuration", "onPause",
-        "onBuffer", "onBufferEnd", "onSeek", "onEnded", "onError"
+        "onStart",
+        "onPlay",
+        "onProgress",
+        "onDuration",
+        "onPause",
+        "onBuffer",
+        "onBufferEnd",
+        "onSeek",
+        "onEnded",
+        "onError",
     ]
     options = {
         # "events": ["onProgress", "onPause"],
         "events": _SUPPORTED_EVENTS,
-        "progress_interval": 1000
+        "progress_interval": 1000,
     }
 
     if is_batch:
@@ -339,31 +408,39 @@ def main(frontend_dev):
     else:
         yt_urls = [
             "https://www.youtube.com/watch?v=6gQ7m0c4ReI",
-            "https://youtu.be/is68rlOzEio"]
+            "https://youtu.be/is68rlOzEio",
+        ]
 
         # XXX Take user input instead of harcoding.
-        
+
         yt_url = st.selectbox("Please select a video to be play", options=yt_urls)
 
         # video_uri = st.session_state[yt_url].get('raw_video')
         if frontend_dev:
-            st.write(f"Here the vide is saved at {st.session_state[yt_url]['raw_video']}")
-        
+            st.write(
+                f"Here the vide is saved at {st.session_state[yt_url]['raw_video']}"
+            )
 
         av_player_parent_dir = os.path.dirname(os.path.abspath(__file__))
-        av_player_build_dir = os.path.join(av_player_parent_dir, "av_player/frontend/build")
-        av_player = components.declare_component("streamlit_player", path=av_player_build_dir)
+        av_player_build_dir = os.path.join(
+            av_player_parent_dir, "av_player/frontend/build"
+        )
+        av_player = components.declare_component(
+            "streamlit_player", path=av_player_build_dir
+        )
 
         # STREAMLIT Video Player Instance
-        video_event = av_player(url=yt_url, width ="500px", height = "300px", **options)
+        video_event = av_player(url=yt_url, width="500px", height="300px", **options)
 
         parse_video_event(video_event)
         placeholder = st.empty()
         if isinstance(video_event, dict):  # retrieve audio data
             if "arr" in video_event.keys():
-                with st.spinner('Transcribing Question...'):
+                with st.spinner("Transcribing Question..."):
                     if not frontend_dev:
-                        transcription = transcribe_question(video_event, default="whisper")
+                        transcription = transcribe_question(
+                            video_event, default="whisper"
+                        )
                         st.session_state["current_question"] = transcription
 
                         placeholder.text(transcription)
@@ -372,39 +449,41 @@ def main(frontend_dev):
             preprocess_youtube_video(yt_url, frontend_dev)
             # Getting Olafdataset
             placeholder_2 = st.empty()
-            with st.spinner('Getting response from MUSIC_AVQA Model...'):
+            with st.spinner("Getting response from MUSIC_AVQA Model..."):
                 # olaf_context = st.session_state[yt_url]
                 olaf_context = {}
-                with open('data/preprocessed_urls_metadata.txt') as my_file:
+                with open("data/preprocessed_urls_metadata.txt") as my_file:
                     olaf_context = json.load(my_file).get(yt_url)
 
                 olaf_input_obj = OlafInput(
                     vocab_label="/scratch/vtyagi14/data/json/avqa-test.json",
                     audio_vggish_features_dir="/scratch/vtyagi14/data/feats/vggish",
                     video_res14x14_dir="/scratch/vtyagi14/data/feats/res18_14x14",
-                    current_answer='one',
+                    current_answer="one",
                     transform=transforms.Compose([ToTensor()]),
                     # current_question = transcription,
-                    current_question = "How many instruments are being played?",
+                    current_question="How many instruments are being played?",
                     olaf_context=olaf_context,
-                    is_batch = False
+                    is_batch=False,
                 )
                 # answer_labels = olaf_input_obj.answer_label
                 model = AVQA_Fusion_Net()
                 model = nn.DataParallel(model)
-                model = model.to('cuda')
+                model = model.to("cuda")
                 test_loader = DataLoader(olaf_input_obj, batch_size=1, pin_memory=True)
                 model.load_state_dict(torch.load("net_grd_avst/avst_models/avst.pt"))
                 model.eval()
                 with torch.no_grad():
                     for batch_idx, sample in enumerate(test_loader):
                         print(f"Vishakha batch id here is {batch_idx}")
-                        audio = sample['audio'].to('cuda')
-                        visual_posi = sample['visual_posi'].to('cuda')
-                        visual_nega = sample['visual_nega'].to('cuda')
-                        question = sample['question'].to('cuda')
-                        target = sample['label'].to('cuda')
-                        preds_qa,out_match_posi,out_match_nega = model(audio, visual_posi,visual_nega, question)
+                        audio = sample["audio"].to("cuda")
+                        visual_posi = sample["visual_posi"].to("cuda")
+                        visual_nega = sample["visual_nega"].to("cuda")
+                        question = sample["question"].to("cuda")
+                        target = sample["label"].to("cuda")
+                        preds_qa, out_match_posi, out_match_nega = model(
+                            audio, visual_posi, visual_nega, question
+                        )
                         preds = preds_qa
                         # print(preds)
                         _, predicted = torch.max(preds.data, 1)
@@ -418,15 +497,13 @@ def main(frontend_dev):
                         # answers = list(olaf_input_obj.answer_vocab)
 
 
-
-
 def setup_directory() -> None:
     """
     Before you begin setup data directories
     data/raw_audio      : Path for extracted Audio from the youtube video
     data/raw_video      : Path for downloaded Video from youtube
     data/frames/audio
-    data/frames/video   :  Path for extracted frames from video 
+    data/frames/video   :  Path for extracted frames from video
     data/features/audio_vggish: Path for extracted VGGish features from audia waveform
     data/features/video_resnet18: PAth for extracted Video features using resent features
     data/user_question  : Path to store user question audio
@@ -454,14 +531,13 @@ def setup_directory() -> None:
     if not os.path.exists("data/pretrained"):
         os.makedirs("data/pretrained")
     if not os.path.exists("data/preprocessed_urls.txt"):
-        open("data/preprocessed_urls.txt", 'a').close()
+        open("data/preprocessed_urls.txt", "a").close()
     if not os.path.exists("data/preprocessed_urls_metadata.txt"):
-        with open("data/preprocessed_urls_metadata.txt", 'w') as foo:
+        with open("data/preprocessed_urls_metadata.txt", "w") as foo:
             yo = {}
             json.dump(yo, foo)
 
 
-
 if __name__ == "__main__":
-    setup_directory()    
+    setup_directory()
     main(frontend_dev=False)

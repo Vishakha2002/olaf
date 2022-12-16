@@ -40,8 +40,9 @@ Question format:
 """
 import random
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-os.environ["CUDA_VISIBLE_DEVICES"] = "1" # set gpu number
+
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"  # set gpu number
 
 import ast
 import json
@@ -64,37 +65,38 @@ from typing import Dict, Tuple
 #         audio = sample['audio']
 #         # label = sample['label']
 
-#         return { 
-#                 'audio': torch.from_numpy(audio), 
-#                 'visual_posi': sample['visual_posi'], 
+#         return {
+#                 'audio': torch.from_numpy(audio),
+#                 'visual_posi': sample['visual_posi'],
 #                 'visual_nega': sample['visual_nega'],
 #                 'question': sample['question']}
 
-class ToTensor(object):
 
+class ToTensor(object):
     def __call__(self, sample):
 
-        audio = sample['audio']
+        audio = sample["audio"]
         # visual_posi = sample['visual_posi']
         # visual_nega = sample['visual_nega']
 
-        return { 
-                'audio': torch.from_numpy(audio), 
-                'visual_posi': sample['visual_posi'],
-                'visual_nega': sample['visual_nega'],
-                'question': sample['question'],
-                'label': sample['label']}
-
+        return {
+            "audio": torch.from_numpy(audio),
+            "visual_posi": sample["visual_posi"],
+            "visual_nega": sample["visual_nega"],
+            "question": sample["question"],
+            "label": sample["label"],
+        }
 
 
 def load_json_data(filepath: str) -> Dict:
     """
     Load json and return dict to you
     """
-    return json.load(open(filepath, 'r'))
+    return json.load(open(filepath, "r"))
+
 
 def ids_to_multinomial(id, categories):
-    """ label encoding
+    """label encoding
     Returns:
       1d array, multimonial representation, e.g. [1,0,1,0,0,...]
     """
@@ -104,15 +106,24 @@ def ids_to_multinomial(id, categories):
 
 
 class OlafInput(Dataset):
-
-    def __init__(self, vocab_label, audio_vggish_features_dir, video_res14x14_dir, current_answer, transform=None, current_question=None, olaf_context={}, is_batch=True):
+    def __init__(
+        self,
+        vocab_label,
+        audio_vggish_features_dir,
+        video_res14x14_dir,
+        current_answer,
+        transform=None,
+        current_question=None,
+        olaf_context={},
+        is_batch=True,
+    ):
         """
         Dataset class to represent data samples.
         is_batch: It is a flag to describe if we are doing batch processing or taking one input from Olaf
         vocab_label: Path to MUSIC_AVQA avqa-test.json
         """
         super(Dataset, self).__init__()
-        
+
         # We need to initialise it here once.
         self.word_to_idx = set()
         self.question_vocab = set()
@@ -121,7 +132,7 @@ class OlafInput(Dataset):
 
         # I believe this is what we would need to update in order to provide input from olaf frontend.
         # XXX Vishakha what does label means here
-        
+
         self.samples = load_json_data(vocab_label)
         # Max question length
         self.max_question_len = 14
@@ -131,7 +142,7 @@ class OlafInput(Dataset):
         # XXX why do we need this?
         self.video_res14x14_dir = video_res14x14_dir
 
-        self.video_ids = {sample['video_id'] for sample in self.samples}
+        self.video_ids = {sample["video_id"] for sample in self.samples}
         self.total_sample_video_count = 60 * len(self.video_ids)
         self.transform = transform
 
@@ -144,13 +155,12 @@ class OlafInput(Dataset):
         # self.word_to_ix = list(self.word_to_idx)
         self.current_answer = current_answer
         # self.build_answer_label()
-    
+
     def build_answer_label(self):
         for answer in self.answer_vocab:
             label = ids_to_multinomial(answer, self.answer_vocab)
             label = torch.from_numpy(np.array(label)).long()
             self.answer_label[label] = answer
-
 
     def build_vocab(self, vocab_label) -> None:
         """
@@ -170,20 +180,22 @@ class OlafInput(Dataset):
         }
         Path:
         /scratch/vtyagi14/data/json/avqa-train.json
+        data/pretrained/avqa-train.json
 
         """
         question = []
         vocab_dataset_path = vocab_label
         # vocab_dataset_path = '/scratch/vtyagi14/data/json/avqa-train.json'
-        # XXX Do we need a padding? 
+        # XXX Do we need a padding?
         # question_vocab = ['<pad>']
         # question_vocab = set()
 
-
         vocab_dataset_dict = load_json_data(vocab_dataset_path)
         for sample in vocab_dataset_dict:
-            question = sample['question_content'].rstrip().split(' ')
-            question[-1] = question[-1][:-1]  # This is just removing the "?" from the last word
+            question = sample["question_content"].rstrip().split(" ")
+            question[-1] = question[-1][
+                :-1
+            ]  # This is just removing the "?" from the last word
 
             # Now lets form the question by using templ_values
             # Sample Question:
@@ -195,33 +207,31 @@ class OlafInput(Dataset):
             found_object_index = 0
             for index in range(len(question)):
                 # Looks for "<" in the word list. We are looking for word <Object>
-                if '<' in question[index]:
-                    question[index] = ast.literal_eval(sample['templ_values'])[found_object_index]
+                if "<" in question[index]:
+                    question[index] = ast.literal_eval(sample["templ_values"])[
+                        found_object_index
+                    ]
                     found_object_index += 1
 
             for word in question:
                 self.question_vocab.add(word)
-            
-            if sample['anser'] not in self.answer_vocab:
-                self.answer_vocab.append(sample['anser'])
-        
-        current_question = self.current_question.split(' ')
+
+            if sample["anser"] not in self.answer_vocab:
+                self.answer_vocab.append(sample["anser"])
+
+        current_question = self.current_question.split(" ")
         if current_question[-1] == "?":
             current_question[-1] = current_question[-1][:-1]
         for word in current_question:
-                self.question_vocab.add(word)
-            
-        self.word_to_idx = {word: i for i, word in enumerate(self.question_vocab)}
+            self.question_vocab.add(word)
 
-        
-        
+        self.word_to_idx = {word: i for i, word in enumerate(self.question_vocab)}
 
     def __len__(self):
         if self.is_batch:
             return len(self.samples)
-        
-        return 1
 
+        return 1
 
     def __getitem__(self, idx):
         """
@@ -246,8 +256,8 @@ class OlafInput(Dataset):
 
         # visual_out_res18_path = '/home/guangyao_li/dataset/avqa-features/visual_14x14'
         # Load resent18 features.
-        visual_posi = np.load(os.path.join(self.video_res14x14_dir, name + '.npy'))  
-    
+        visual_posi = np.load(os.path.join(self.video_res14x14_dir, name + '.npy'))
+
         # visual_posi [60, 512, 14, 14], select 10 frames from one video
         # XXX Why are we doing this??? It seems we are selecting every 6th frame feature
         visual_posi = visual_posi[::6, :]
@@ -315,7 +325,7 @@ class OlafInput(Dataset):
         """
         # XXX Comeup with a better name and reset default as you become aware of them
         # single_sample = {
-        #     'audio': None, 
+        #     'audio': None,
         #     'visual_posi': None,
         #     'visual_nega': None,
         #     'question': None,
@@ -325,7 +335,9 @@ class OlafInput(Dataset):
         if not self.is_batch:
             # If we are here that means we need to take input from olaf rather then do batch processing.
 
-            vggish_audio_feature = np.load(self.olaf_context.get("vggish_audio_feature_file_path"))
+            vggish_audio_feature = np.load(
+                self.olaf_context.get("vggish_audio_feature_file_path")
+            )
             print("Vishakha vggish_audio_feature before [::6, :] ~~~~~")
             print(f"{vggish_audio_feature.shape}")
             # print("Vishakha vggish_audio_feature here ~~~~~")
@@ -338,7 +350,9 @@ class OlafInput(Dataset):
             print(f"{vggish_audio_feature.shape}")
 
             # resnet_video_feature
-            visual_posi = np.load(self.olaf_context.get("resnet_video_feature_file_path"))
+            visual_posi = np.load(
+                self.olaf_context.get("resnet_video_feature_file_path")
+            )
             print("Vishakha visual_posi before [::6, :] ~~~~~")
             print(f"{visual_posi.shape}")
             # XXX Why are we doing this??? It seems we are selecting every 6th frame feature
@@ -358,45 +372,47 @@ class OlafInput(Dataset):
                 neg_frame_flag = neg_frame_id % 60
                 neg_video_name = list(self.video_ids)[neg_video_id]
 
-                visual_nega_out_res18=np.load(os.path.join(self.video_res14x14_dir, neg_video_name + '.npy'))
+                visual_nega_out_res18 = np.load(
+                    os.path.join(self.video_res14x14_dir, neg_video_name + ".npy")
+                )
 
                 visual_nega_out_res18 = torch.from_numpy(visual_nega_out_res18)
-                visual_nega_clip=visual_nega_out_res18[neg_frame_flag,:,:,:].unsqueeze(0)
+                visual_nega_clip = visual_nega_out_res18[
+                    neg_frame_flag, :, :, :
+                ].unsqueeze(0)
 
-                if(i==0):
-                    visual_nega=visual_nega_clip
+                if i == 0:
+                    visual_nega = visual_nega_clip
                 else:
-                    visual_nega=torch.cat((visual_nega,visual_nega_clip),dim=0)
+                    visual_nega = torch.cat((visual_nega, visual_nega_clip), dim=0)
 
             print(f"vishakha visual_nega shape {visual_nega.shape}")
 
-            question = self.current_question.split(' ')
+            question = self.current_question.split(" ")
             if question[-1] == "?":
                 question[-1] = question[-1][:-1]
-            
+
             idxs = [self.word_to_idx[w] for w in question]
             ques = torch.tensor(idxs, dtype=torch.long)
 
             label = ids_to_multinomial(self.current_answer, self.answer_vocab)
             label = torch.from_numpy(np.array(label)).long()
-        
+
             single_sample = {
-                'audio': vggish_audio_feature, 
-                'visual_posi': visual_posi,
-                'visual_nega': visual_nega,
-                'question': ques,
-                'label': label
+                "audio": vggish_audio_feature,
+                "visual_posi": visual_posi,
+                "visual_nega": visual_nega,
+                "question": ques,
+                "label": label,
             }
 
             if self.transform:
                 sample = self.transform(single_sample)
             return sample
 
-
         raise Exception("Not Implemented for batch processing yet")
         # XXX Vishakha this code is almost implement at the following link.
         # https://github.com/GeWu-Lab/MUSIC-AVQA/blob/main/net_grd_avst/dataloader_avst.py#L121
-
 
     def make_sample(self):
         pass
@@ -421,17 +437,17 @@ if __name__ == "__main__":
         "video_frame_path": "/home/vtyagi14/olaf/data/frames/video/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video",
         "vggish_audio_feature_file_path": "/home/vtyagi14/olaf/data/features/audio_vggish/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.npy",
         "resnet_video_feature_file_path": "/home/vtyagi14/olaf/data/features/video_resnet18/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.npy",
-        "extracted_frames": True
+        "extracted_frames": True,
     }
 
     olaf_input_obj = OlafInput(
-        vocab_label="/scratch/vtyagi14/data/json/avqa-test.json",
+        vocab_label="data/pretrained/avqa-train.json",
         audio_vggish_features_dir="/scratch/vtyagi14/data/feats/vggish",
         video_res14x14_dir="/scratch/vtyagi14/data/feats/res18_14x14",
-        current_answer='one',
+        current_answer="one",
         transform=transforms.Compose([ToTensor()]),
-        current_question = "How many instruments are sounding in the video?",
+        current_question="How many instruments are sounding in the video?",
         olaf_context=olaf_context,
-        is_batch = False
-        )
+        is_batch=False,
+    )
     olaf_input_obj.__getitem__(0)
