@@ -490,7 +490,7 @@
         "question_id": 15501,
         "type": "[\"Visual\", \"Location\"]",
         "question_content": "What kind of instrument is the <LRer> instrument? ",
-        "templ_values": "[\"righttest\"]",
+        "templ_values": "[\"rightest\"]",
         "question_deleted": 0,
         "anser": "saxophone"
     },
@@ -526,7 +526,7 @@
         "question_id": 15501,
         "type": "[\"Visual\", \"Location\"]",
         "question_content": "What kind of instrument is the <LRer> instrument? ",
-        "templ_values": "[\"righttest\"]",
+        "templ_values": "[\"rightest\"]",
         "question_deleted": 0,
         "anser": "violin"
     },
@@ -571,7 +571,7 @@
         "question_id": 15501,
         "type": "[\"Visual\", \"Location\"]",
         "question_content": "What kind of instrument is the <LRer> instrument? ",
-        "templ_values": "[\"righttest\"]",
+        "templ_values": "[\"rightest\"]",
         "question_deleted": 0,
         "anser": "trumpet"
     },
@@ -598,7 +598,7 @@
         "question_id": 15501,
         "type": "[\"Visual\", \"Location\"]",
         "question_content": "What kind of instrument is the <LRer> instrument? ",
-        "templ_values": "[\"righttest\"]",
+        "templ_values": "[\"rightest\"]",
         "question_deleted": 0,
         "anser": "trumpet"
     },
@@ -643,7 +643,7 @@
         "question_id": 15501,
         "type": "[\"Visual\", \"Location\"]",
         "question_content": "What kind of instrument is the <LRer> instrument? ",
-        "templ_values": "[\"righttest\"]",
+        "templ_values": "[\"rightest\"]",
         "question_deleted": 0,
         "anser": "piano"
     },
@@ -652,7 +652,7 @@
         "question_id": 15501,
         "type": "[\"Visual\", \"Location\"]",
         "question_content": "What kind of instrument is the <LRer> instrument? ",
-        "templ_values": "[\"righttest\"]",
+        "templ_values": "[\"rightest\"]",
         "question_deleted": 0,
         "anser": "voilin"
     },
@@ -805,7 +805,7 @@
         "question_id": 15501,
         "type": "[\"Visual\", \"Location\"]",
         "question_content": "What kind of instrument is the <LRer> instrument? ",
-        "templ_values": "[\"righttest\"]",
+        "templ_values": "[\"rightest\"]",
         "question_deleted": 0,
         "anser": "electric_bass"
     },
