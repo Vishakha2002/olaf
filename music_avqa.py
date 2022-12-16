@@ -477,6 +477,7 @@ class OlafBatchInput(Dataset):
 
         # visual_posi [60, 512, 14, 14], select 10 frames from one video
         visual_posi = visual_posi[::6, :]
+        visual_posi = visual_posi[:-1, :]
         video_idx = self.video_list.index(name)
 
         for i in range(visual_posi.shape[0]):

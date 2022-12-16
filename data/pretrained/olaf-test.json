@@ -15,7 +15,7 @@
         "question_content": "What kind of musical instrument is it?",
         "templ_values": "[]",
         "question_deleted": 0,
-        "anser": "guitar"
+        "anser": "acoustic_guitar"
     },
     {
         "video_id": "Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video",
@@ -31,7 +31,7 @@
         "question_id": 20,
         "type": "[\"Audio-Visual\", \"Counting\"]",
         "question_content": "How many sounding <Object> in the video?",
-        "templ_values": "[\"guitar\"]",
+        "templ_values": "[\"acoustic_guitar\"]",
         "question_deleted": 0,
         "anser": "one"
     },
@@ -535,7 +535,7 @@
         "question_id": 20,
         "type": "[\"Audio-Visual\", \"Counting\"]",
         "question_content": "How many sounding <Object> in the video?",
-        "templ_values": "[\"guitar\"]",
+        "templ_values": "[\"acoustic_guitar\"]",
         "question_deleted": 0,
         "anser": "one"
     },
@@ -796,7 +796,7 @@
         "question_id": 1677,
         "type": "[\"Audio-Visual\", \"Existential\"]",
         "question_content": "Is the <Object> in the video always playing?",
-        "templ_values": "[\"guitar\"]",
+        "templ_values": "[\"acoustic_guitar\"]",
         "question_deleted": 0,
         "anser": "yes"
     },
