@@ -7,12 +7,20 @@ _RELEASE = True
 if not _RELEASE:
     _component_func = declare_component("streamlit_player", url="http://localhost:3001")
 else:
-    _component_path = (Path(__file__).parent/"frontend"/"build").resolve()
+    _component_path = (Path(__file__).parent / "frontend" / "build").resolve()
     _component_func = declare_component("streamlit_player", path=_component_path)
 
 _SUPPORTED_EVENTS = [
-    "onStart", "onPlay", "onProgress", "onDuration", "onPause",
-    "onBuffer", "onBufferEnd", "onSeek", "onEnded", "onError"
+    "onStart",
+    "onPlay",
+    "onProgress",
+    "onDuration",
+    "onPause",
+    "onBuffer",
+    "onBufferEnd",
+    "onSeek",
+    "onEnded",
+    "onError",
 ]
 
 _PlayerEvent = namedtuple("PlayerEvent", ["name", "data"])
@@ -33,20 +41,20 @@ def st_player(
     play_inline=None,
     events=None,
     config=None,
-    key=None
+    key=None,
 ):
     """Embed a video or music player.
-    
+
     Parameters
     ----------
     url : str
         The url of a video or song to play.
-    height : int or None 
+    height : int or None
         Set player height.
     playing : bool or None
         Set to true or false to pause or play the media.
     loop : bool or None
-        Set to true or false to loop the media. 
+        Set to true or false to loop the media.
     controls : bool
         Set to true or false to display native player controls.
         For Vimeo videos, hiding controls must be enabled by the video owner.
@@ -79,11 +87,15 @@ def st_player(
 
     """
     # Filter unsupported events and options
-    events = [evt for evt in events if evt in _SUPPORTED_EVENTS] if events is not None else []
+    events = (
+        [evt for evt in events if evt in _SUPPORTED_EVENTS]
+        if events is not None
+        else []
+    )
 
     # Load component
     event = _component_func(
-        url=url, 
+        url=url,
         height=height,
         width=width,
         playing=playing,
@@ -98,7 +110,7 @@ def st_player(
         events=events,
         config=config,
         key=key,
-        default={}
+        default={},
     )
 
     return _PlayerEvent(event.get("name", None), event.get("data", None))

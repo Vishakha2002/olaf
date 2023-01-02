@@ -22,18 +22,17 @@ from pytube import YouTube
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from audio_feature.extract_audio_vggish_feat import \
-    generate_audio_vggish_features
+from audio_feature.extract_audio_vggish_feat import generate_audio_vggish_features
 from music_avqa import OlafBatchInput, OlafInput, ToTensor, test
 from net_grd_avst.net_avst import AVQA_Fusion_Net
 from video_feature.extract_resnet18_14x14 import extract_video_feature
 
-logging.basicConfig(filename='olaf.log', encoding='utf-8', level=logging.DEBUG)
+logging.basicConfig(filename="olaf.log", encoding="utf-8", level=logging.DEBUG)
 # create console handler and set level to debug
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
 # create formatter
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 # add formatter to ch
 ch.setFormatter(formatter)
 log = logging.getLogger(__name__)
@@ -89,15 +88,13 @@ def parse_video_event(video_event):
 
         if video_event.get("data") and isinstance(video_event.get("data"), dict):
             frame_stopped_at = video_event["data"].get("playedSeconds")
-            log.debug(f"you paused the video at {frame_stopped_at} session state {st.session_state.is_video_paused}")
+            log.debug(
+                f"you paused the video at {frame_stopped_at} session state {st.session_state.is_video_paused}"
+            )
             if st.session_state.is_video_paused:
                 log.debug(f"you paused the video at {frame_stopped_at}")
                 st.session_state.frame_stopped_at = frame_stopped_at
                 st.session_state.is_video_paused = False
-
-
-
-
 
 
 def extract_audio_features():
@@ -256,9 +253,7 @@ def preprocess_youtube_video(yt_url, frontend_dev):
                 vggish_audio_feature_file_path = generate_audio_vggish_features(
                     saved_audio
                 )
-                resnet_video_feature_file_path = extract_video_feature(
-                    video_frame_path
-                )
+                resnet_video_feature_file_path = extract_video_feature(video_frame_path)
             except Exception:
                 log.exception(f"Unable to process video {video_title}/ url {yt_url}")
                 raise
@@ -286,7 +281,7 @@ def preprocess_youtube_video(yt_url, frontend_dev):
         dictionary[yt_url] = preprocess_state
 
         with open("data/preprocessed_urls_metadata.txt", "w") as outfile:
-                json.dump(dictionary, outfile)
+            json.dump(dictionary, outfile)
 
 
 def run_batch_pre_processing(frontend_dev):
@@ -402,7 +397,7 @@ def main(frontend_dev):
     #     layout="wide",
     # )
 
-    is_batch_input = st.radio("Is batch processing?", ["Yes", "No"], horizontal= True)
+    is_batch_input = st.radio("Is batch processing?", ["Yes", "No"], horizontal=True)
     is_batch = is_batch_input == "Yes"
 
     # Setup for streamlit_player
@@ -534,6 +529,7 @@ def download_viggish_model():
     response = requests.get(URL)
     open("vggish_model.ckpt", "wb").write(response.content)
     log.info("Downloaded vggish_model.ckpt")
+
 
 def setup_directory() -> None:
     """

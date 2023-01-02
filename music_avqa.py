@@ -495,12 +495,14 @@ class OlafBatchInput(Dataset):
 
             visual_nega_out_res18 = torch.from_numpy(visual_nega_out_res18)
             if visual_nega_out_res18.shape[0] < neg_frame_flag:
-                print(f"Vishakha visual_nega_out_res18 shape {visual_nega_out_res18.shape[0]} and neg_frame_flag {neg_frame_flag}")
+                print(
+                    f"Vishakha visual_nega_out_res18 shape {visual_nega_out_res18.shape[0]} and neg_frame_flag {neg_frame_flag}"
+                )
                 neg_frame_flag = neg_frame_flag - 10
                 print(f"Vishakha after neg_frame_flag {neg_frame_flag}")
             if neg_frame_flag == 50:
                 print(f"Vishakha before neg_frame_flag {neg_frame_flag}")
-                neg_frame_flag = random.randint(5,49)
+                neg_frame_flag = random.randint(5, 49)
                 print(f"Vishakha after neg_frame_flag {neg_frame_flag}")
 
             visual_nega_clip = visual_nega_out_res18[neg_frame_flag, :, :, :].unsqueeze(
@@ -637,8 +639,20 @@ def test(model, val_loader):
             "AV Accuracy: %.2f %%"
             % (
                 100
-                * (sum(AV_count) + sum(AV_loc) + sum(AV_ext) + sum(AV_temp) + sum(AV_cmp))
-                / (len(AV_count) + len(AV_loc) + len(AV_ext) + len(AV_temp) + len(AV_cmp))
+                * (
+                    sum(AV_count)
+                    + sum(AV_loc)
+                    + sum(AV_ext)
+                    + sum(AV_temp)
+                    + sum(AV_cmp)
+                )
+                / (
+                    len(AV_count)
+                    + len(AV_loc)
+                    + len(AV_ext)
+                    + len(AV_temp)
+                    + len(AV_cmp)
+                )
             )
         )
 
