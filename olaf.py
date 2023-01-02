@@ -28,7 +28,7 @@ from music_avqa import OlafBatchInput, OlafInput, ToTensor, test
 from net_grd_avst.net_avst import AVQA_Fusion_Net
 from video_feature.extract_resnet18_14x14 import extract_video_feature
 
-logging.basicConfig(filename="logs/olaf.log", encoding="utf-8", level=logging.DEBUG)
+# logging.basicConfig(filename="logs/olaf.log", encoding="utf-8", level=logging.DEBUG)
 # create console handler and set level to debug
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
@@ -398,7 +398,7 @@ def main(frontend_dev):
     #     layout="wide",
     # )
 
-    is_batch_input = st.radio("Is batch processing?", ["Yes", "No"], horizontal=True)
+    is_batch_input = st.radio("Is batch processing?", ["No", "Yes"], horizontal=True)
     is_batch = is_batch_input == "Yes"
 
     # Setup for streamlit_player
@@ -530,7 +530,7 @@ def download_required_files():
         response = requests.get(URL)
         open("vggish_model.ckpt", "wb").write(response.content)
         log.info("Downloaded vggish_model.ckpt")
-    if os.path.exists("ffmpeg_dir/ffmpeg"):
+    if os.path.exists("ffmpeg_dir/ffmpeg-git-20220910-i686-static/ffmpeg"):
         log.info("ffmpeg is already downloaded")
     else:
         log.info("Downloading ffmpeg")
@@ -544,7 +544,7 @@ def download_required_files():
         ffmpeg_file.extractall('./ffmpeg_dir')
         ffmpeg_file.close()
         log.info("Setting ffmpeg file path")
-        os.environ["PATH"] += os.pathsep + os.path.join(os.getcwd(), "ffmpeg_dir")
+        os.environ["PATH"] += os.pathsep + os.path.join(os.getcwd(), "ffmpeg_dir/ffmpeg-git-20220910-i686-static/")
 
 
 
@@ -595,13 +595,14 @@ def setup_directory() -> None:
         os.makedirs("logs")
 
 
-if __name__ == "__main__":
-    """
-    Olaf main script
-    """
-    log.info("Staring Olaf Application")
-    log.info("Setting up directories for Olaf Application")
-    setup_directory()
-    log.info("Running Olaf main script")
-    download_required_files()
-    main(frontend_dev=False)
+# if __name__ == "__main__":
+#     """
+#     Olaf main script
+#     """
+log.info("Staring Olaf Application")
+log.info("Setting up directories for Olaf Application")
+setup_directory()
+log.info("Running Olaf main script")
+download_required_files()
+print(os.environ["PATH"])
+main(frontend_dev=False)

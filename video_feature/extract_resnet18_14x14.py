@@ -55,7 +55,7 @@ def extract_feats(model, framepath, load_image_fn):
     ### image
     select_img = []
     image_list = sorted(glob.glob(os.path.join("data/frames/video", raw_name, "*.jpg")))
-    log.info("Count of frame images: ", len(image_list))
+    log.info(f"Count of frame images: {len(image_list)}" )
 
     samples = np.round(np.linspace(0, len(image_list) - 1, len(image_list)))
 
@@ -73,7 +73,7 @@ def extract_feats(model, framepath, load_image_fn):
         visual_out = model(select_img.cuda())
     fea = visual_out.cpu().numpy()
 
-    log.info("Feature shape", fea.shape)
+    log.info(f"Feature shape {fea.shape}")
     np.save(outfile, fea)
 
     return outfile
