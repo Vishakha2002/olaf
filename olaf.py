@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import re
+import tarfile
 import time
 from io import BytesIO
 
@@ -27,7 +28,7 @@ from music_avqa import OlafBatchInput, OlafInput, ToTensor, test
 from net_grd_avst.net_avst import AVQA_Fusion_Net
 from video_feature.extract_resnet18_14x14 import extract_video_feature
 
-logging.basicConfig(filename="olaf.log", encoding="utf-8", level=logging.DEBUG)
+logging.basicConfig(filename="logs/olaf.log", encoding="utf-8", level=logging.DEBUG)
 # create console handler and set level to debug
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
@@ -521,14 +522,30 @@ def main(frontend_dev):
                         # answers = list(olaf_input_obj.answer_vocab)
 
 
-def download_viggish_model():
+def download_required_files():
     if os.path.exists("vggish_model.ckpt"):
         log.info("Found vggish_model.ckpt, no need to download it")
-        return
-    URL = "https://storage.googleapis.com/audioset/vggish_model.ckpt"
-    response = requests.get(URL)
-    open("vggish_model.ckpt", "wb").write(response.content)
-    log.info("Downloaded vggish_model.ckpt")
+    else:
+        URL = "https://storage.googleapis.com/audioset/vggish_model.ckpt"
+        response = requests.get(URL)
+        open("vggish_model.ckpt", "wb").write(response.content)
+        log.info("Downloaded vggish_model.ckpt")
+    if os.path.exists("ffmpeg_dir/ffmpeg"):
+        log.info("ffmpeg is already downloaded")
+    else:
+        log.info("Downloading ffmpeg")
+        os.makedirs("ffmpeg_dir")
+
+        URL = "https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-i686-static.tar.xz"
+        response = requests.get(URL)
+        open("ffmpeg-git-i686-static.tar.xz", "wb").write(response.content)
+
+        ffmpeg_file = tarfile.open('ffmpeg-git-i686-static.tar.xz')
+        ffmpeg_file.extractall('./ffmpeg_dir')
+        ffmpeg_file.close()
+        log.info("Setting ffmpeg file path")
+        os.environ["PATH"] += os.pathsep + os.path.join(os.getcwd(), "ffmpeg_dir")
+
 
 
 def setup_directory() -> None:
@@ -543,6 +560,7 @@ def setup_directory() -> None:
     data/user_question                  : Path to store user question audio
     data/preprocessed_urls.txt          : Path to append preprocessed yt urls
     data/preprocessed_urls_metadata.txt : Path to add preprocessing metadata for a processed yt url
+    logs                                : Path to save olaf logs
 
     """
     if not os.path.exists("data/raw_audio"):
@@ -573,12 +591,17 @@ def setup_directory() -> None:
         with open("data/preprocessed_urls_metadata.txt", "w") as foo:
             tmp = {}
             json.dump(tmp, foo)
+    if not os.path.exists("logs"):
+        os.makedirs("logs")
 
 
 if __name__ == "__main__":
+    """
+    Olaf main script
+    """
     log.info("Staring Olaf Application")
     log.info("Setting up directories for Olaf Application")
     setup_directory()
     log.info("Running Olaf main script")
-    download_viggish_model()
+    download_required_files()
     main(frontend_dev=False)
