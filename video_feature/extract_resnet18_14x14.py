@@ -1,16 +1,18 @@
 import glob
-import numpy as np
+import logging
 import os
-import pretrainedmodels
-from PIL import Image
-from torchvision import transforms
 
-from pretrainedmodels import utils
+import numpy as np
+import pretrainedmodels
 import torch
+from PIL import Image
+from pretrainedmodels import utils
 from torch import nn
+from torchvision import transforms
 
 from .avqa_fusion_net import AVQA_Fusion_Net
 
+log = logging.getLogger(__name__)
 
 def TransformImage(img):
 
@@ -23,7 +25,7 @@ def TransformImage(img):
     transform_list.append(transforms.Normalize(mean, std))
     trans = transforms.Compose(transform_list)
     frame_tensor = trans(img)
-    
+
     return frame_tensor
 
 
@@ -46,13 +48,13 @@ def extract_feats(model, framepath, load_image_fn):
 
     outfile = os.path.join(output_directory, raw_name + '.npy')
     if os.path.exists(outfile):
-        print(outfile, "already exist!")
+        log.info(outfile, "already exist!")
         return outfile
-    
+
     ### image
     select_img = []
     image_list = sorted(glob.glob(os.path.join("data/frames/video", raw_name, '*.jpg')))
-    print("Count of frame images: ", len(image_list))
+    log.info("Count of frame images: ", len(image_list))
 
     samples = np.round(np.linspace(0, len(image_list) - 1, len(image_list)))
 
@@ -71,7 +73,7 @@ def extract_feats(model, framepath, load_image_fn):
         visual_out = model(select_img.cuda())
     fea = visual_out.cpu().numpy()
 
-    print('Feature shape', fea.shape)
+    log.info('Feature shape', fea.shape)
     np.save(outfile, fea)
 
     return outfile
@@ -81,7 +83,7 @@ def extract_video_feature(framepath):
     # XXX maybe needed in Super computer.
     # os.environ['CUDA_VISIBLE_DEVICES'] = "0, 1"
     torch.cuda.empty_cache()
-    
+
     pretrained_resnet_model = pretrainedmodels.resnet18(pretrained='imagenet')
     load_image_fn = utils.LoadTransformImage(pretrained_resnet_model)
 

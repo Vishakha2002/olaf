@@ -41,7 +41,7 @@ WORKDIR /app
 RUN pip3 install -r requirements.txt
 RUN pip3 uninstall -y whisper
 RUN pip3 install git+https://github.com/openai/whisper.git
-# RUN wget -qO- "https://getbin.io/suyashkumar/ssl-proxy" | tar xvz 
+# RUN wget -qO- "https://getbin.io/suyashkumar/ssl-proxy" | tar xvz
 
 # run the application
 ENTRYPOINT ["streamlit", "run", "olaf.py", "--server.port=8501", "--server.address=0.0.0.0"]

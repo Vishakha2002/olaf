@@ -1,16 +1,17 @@
+import contextlib
+import logging
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-os.environ["CUDA_VISIBLE_DEVICES"] = "1" # set gpu number
+import wave
+
 import numpy as np
 import tensorflow as tf
 
-from . import vggish_input
-from . import vggish_params
-from . import vggish_slim
-import contextlib
-import wave
-import streamlit as st
+from . import vggish_input, vggish_params, vggish_slim
 
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ["CUDA_VISIBLE_DEVICES"] = "1" # set gpu number
+
+log = logging.getLogger(__name__)
 
 # get audio length
 def get_audio_len(audio_file):
@@ -25,6 +26,10 @@ def get_audio_len(audio_file):
 
 
 def generate_audio_vggish_features(filename):
+    """
+    Function extracts the audio features and retrun the path where these
+    features are saved
+    """
     # Paths to downloaded VGGish files.
     checkpoint_path = 'vggish_model.ckpt'
 
@@ -32,15 +37,15 @@ def generate_audio_vggish_features(filename):
     audio_dir = "data/raw_audios" # .wav audio files
     save_dir = "data/features/audio_vggish/"
 
-    # st.write("Starting to extract viggish audio features")
+    log.info(f"Starting to extract viggish audio features for {filename}")
     raw_name = filename.split('/')[-1]
     raw_name = raw_name.split(".")[0]
 
-    # st.write(f"Vishakha raw file name {raw_name}")
+    # log(f"Vishakha raw file name {raw_name}")
 
     outfile = os.path.join(save_dir, raw_name + '.npy')
     if os.path.exists(outfile):
-        print(f" {outfile} already exist! ")
+        log.info(f" {outfile} already exist! ")
         return outfile
 
     '''feature learning by VGG-net trained by audioset'''
@@ -66,5 +71,5 @@ def generate_audio_vggish_features(filename):
         # print(f'VGGish embedding: {embedding_batch[0]}')
 
         np.save(outfile, embedding_batch)
-        print(f" save info: {outfile} ---> {embedding_batch.shape}" )
+        log.info(f" save info: {outfile} ---> {embedding_batch.shape}" )
         return outfile

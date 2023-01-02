@@ -502,7 +502,7 @@ class OlafBatchInput(Dataset):
                 print(f"Vishakha before neg_frame_flag {neg_frame_flag}")
                 neg_frame_flag = random.randint(5,49)
                 print(f"Vishakha after neg_frame_flag {neg_frame_flag}")
-                
+
             visual_nega_clip = visual_nega_out_res18[neg_frame_flag, :, :, :].unsqueeze(
                 0
             )
@@ -608,31 +608,39 @@ def test(model, val_loader):
                     AV_temp.append((predicted == target).sum().item())
 
     print("Audio Counting Accuracy: %.2f %%" % (100 * sum(A_count) / len(A_count)))
-    print("Audio Cmp Accuracy: %.2f %%" % (100 * sum(A_cmp) / len(A_cmp)))
-    print(
-        "Audio Accuracy: %.2f %%"
-        % (100 * (sum(A_count) + sum(A_cmp)) / (len(A_count) + len(A_cmp)))
-    )
-    print("Visual Counting Accuracy: %.2f %%" % (100 * sum(V_count) / len(V_count)))
-    print("Visual Loc Accuracy: %.2f %%" % (100 * sum(V_loc) / len(V_loc)))
-    print(
-        "Visual Accuracy: %.2f %%"
-        % (100 * (sum(V_count) + sum(V_loc)) / (len(V_count) + len(V_loc)))
-    )
-    print("AV Ext Accuracy: %.2f %%" % (100 * sum(AV_ext) / len(AV_ext)))
-    print("AV counting Accuracy: %.2f %%" % (100 * sum(AV_count) / len(AV_count)))
-    print("AV Loc Accuracy: %.2f %%" % (100 * sum(AV_loc) / len(AV_loc)))
-    print("AV Cmp Accuracy: %.2f %%" % (100 * sum(AV_cmp) / len(AV_cmp)))
-    print("AV Temporal Accuracy: %.2f %%" % (100 * sum(AV_temp) / len(AV_temp)))
-
-    print(
-        "AV Accuracy: %.2f %%"
-        % (
-            100
-            * (sum(AV_count) + sum(AV_loc) + sum(AV_ext) + sum(AV_temp) + sum(AV_cmp))
-            / (len(AV_count) + len(AV_loc) + len(AV_ext) + len(AV_temp) + len(AV_cmp))
+    if len(A_cmp) != 0:
+        print("Audio Cmp Accuracy: %.2f %%" % (100 * sum(A_cmp) / len(A_cmp)))
+        print(
+            "Audio Accuracy: %.2f %%"
+            % (100 * (sum(A_count) + sum(A_cmp)) / (len(A_count) + len(A_cmp)))
         )
-    )
+    if len(V_count) != 0:
+        print("Visual Counting Accuracy: %.2f %%" % (100 * sum(V_count) / len(V_count)))
+    if len(V_loc) != 0:
+        print("Visual Loc Accuracy: %.2f %%" % (100 * sum(V_loc) / len(V_loc)))
+        print(
+            "Visual Accuracy: %.2f %%"
+            % (100 * (sum(V_count) + sum(V_loc)) / (len(V_count) + len(V_loc)))
+        )
+    if len(AV_ext) != 0:
+        print("AV Ext Accuracy: %.2f %%" % (100 * sum(AV_ext) / len(AV_ext)))
+    if len(AV_count) != 0:
+        print("AV counting Accuracy: %.2f %%" % (100 * sum(AV_count) / len(AV_count)))
+    if len(AV_loc) != 0:
+        print("AV Loc Accuracy: %.2f %%" % (100 * sum(AV_loc) / len(AV_loc)))
+    if len(AV_cmp) != 0:
+        print("AV Cmp Accuracy: %.2f %%" % (100 * sum(AV_cmp) / len(AV_cmp)))
+    if len(AV_temp) != 0:
+        print("AV Temporal Accuracy: %.2f %%" % (100 * sum(AV_temp) / len(AV_temp)))
+    if len(AV_cmp) != 0 and len(AV_temp) != 0:
+        print(
+            "AV Accuracy: %.2f %%"
+            % (
+                100
+                * (sum(AV_count) + sum(AV_loc) + sum(AV_ext) + sum(AV_temp) + sum(AV_cmp))
+                / (len(AV_count) + len(AV_loc) + len(AV_ext) + len(AV_temp) + len(AV_cmp))
+            )
+        )
 
     print("Overall Accuracy: %.2f %%" % (100 * correct / total))
 

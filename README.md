@@ -45,9 +45,9 @@ You would have application running on your localhost.
 
 
 ### Install Whisper dependecies
-The codebase also depends on a few Python packages, most notably [HuggingFace Transformers](https://huggingface.co/docs/transformers/index) for their fast tokenizer implementation and [ffmpeg-python](https://github.com/kkroening/ffmpeg-python) for reading audio files. The following command will pull and install the latest commit from this repository, along with its Python dependencies 
+The codebase also depends on a few Python packages, most notably [HuggingFace Transformers](https://huggingface.co/docs/transformers/index) for their fast tokenizer implementation and [ffmpeg-python](https://github.com/kkroening/ffmpeg-python) for reading audio files. The following command will pull and install the latest commit from this repository, along with its Python dependencies
 
-    pip install git+https://github.com/openai/whisper.git 
+    pip install git+https://github.com/openai/whisper.git
 
 It also requires the command-line tool [`ffmpeg`](https://ffmpeg.org/) to be installed on your system, which is available from most package managers:
 
@@ -76,7 +76,7 @@ pip3 install torch
 pip3 install tqdm
 pip3 install more-itertools
 pip3 install transformers==4.19.0
-pip3 install 
+pip3 install
 ffmpeg-python==0.2.0
 ```
 
@@ -94,23 +94,25 @@ tar -xvf archive.tar.gz
 ### Tar a file
 
 ### Pip install flag to without cache
---no-cache-dir 
+--no-cache-dir
 
 ### fix for urllib.error.URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1091)>
 (olaf_3_7_9_env) vtyagi@Vishakhas-MacBook-Pro olaf % open /Applications/Python\ 3.7/Install\ Certificates.command
 
-### ssl proxy 
+### ssl proxy
 https://github.com/suyashkumar/ssl-proxy
 
 
 ## Data Directory Structure
-data/raw_audio : Path for extracted Audio from the youtube video
-data/raw_video : Path for downloaded Video from youtube
+data/raw_audio                      : Path for extracted Audio from the youtube video
+data/raw_video                      : Path for downloaded Video from youtube
 data/frames/audio
-data/frames/video :  Path for extracted frames from video 
-data/features/audio
-data/features/video
-data/user_question
+data/frames/video                   : Path for extracted frames from video
+data/features/audio_vggish          : Path for extracted VGGish features from audia waveform
+data/features/video_resnet18        : PAth for extracted Video features using resent features
+data/user_question                  : Path to store user question audio
+data/preprocessed_urls.txt          : Path to append preprocessed yt urls
+data/preprocessed_urls_metadata.txt : Path to add preprocessing metadata for a processed yt url
 
 # tunnel to agave compute host
 % ssh vtyagi14@agave.asu.edu -L 8501:cg28-2.agave.rc.asu.edu:850
@@ -121,7 +123,7 @@ https://stackoverflow.com/questions/47068709/your-cpu-supports-instructions-that
 
 # To download ffmpeg and deploy without root
 download `i686-static` from https://www.johnvansickle.com/ffmpeg/
-then extract it using 
+then extract it using
 `tar xvf ffmpeg-git-i686-static.tar.xz`
 Finally add it to the os path
 `export PATH=/home/vishakha/olaf/ffmpeg-git-20220910-i686-static:$PATH`

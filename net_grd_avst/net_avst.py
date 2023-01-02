@@ -20,7 +20,7 @@ def batch_organize(out_match_posi, out_match_nega):
         out_match[i * 2 + 1, :] = out_match_nega[i, :]
         batch_labels[i * 2] = 1
         batch_labels[i * 2 + 1] = 0
-    
+
     return out_match, batch_labels
 
 # Question
@@ -121,7 +121,7 @@ class AVQA_Fusion_Net(nn.Module):
 
         ## audio features  [2*B*T, 128]
         audio_feat = F.relu(self.fc_a1(audio))
-        audio_feat = self.fc_a2(audio_feat)  
+        audio_feat = self.fc_a2(audio_feat)
         audio_feat_pure = audio_feat
         B, T, C = audio_feat.size()             # [B, T, C]
         audio_feat = audio_feat.view(B*T, C)    # [B*T, C]
@@ -151,7 +151,7 @@ class AVQA_Fusion_Net(nn.Module):
 
         x2_p = F.softmax(x2_va, dim=-1).unsqueeze(-2)                       # [B*T, 1, HxW]
         visual_feat_grd = torch.matmul(x2_p, visual_feat_posi)
-        visual_feat_grd_after_grounding_posi = visual_feat_grd.squeeze()    # [B*T, C]   
+        visual_feat_grd_after_grounding_posi = visual_feat_grd.squeeze()    # [B*T, C]
 
         visual_gl = torch.cat((visual_feat_before_grounding_posi, visual_feat_grd_after_grounding_posi),dim=-1)
         visual_feat_grd = self.tanh(visual_gl)
@@ -186,7 +186,7 @@ class AVQA_Fusion_Net(nn.Module):
         x2_va = torch.matmul(visual_feat_nega, audio_feat_aa).squeeze()
         x2_p = F.softmax(x2_va, dim=-1).unsqueeze(-2)                       # [B*T, 1, HxW]
         visual_feat_grd = torch.matmul(x2_p, visual_feat_nega)
-        visual_feat_grd_after_grounding_nega = visual_feat_grd.squeeze()    # [B*T, C]   
+        visual_feat_grd_after_grounding_nega = visual_feat_grd.squeeze()    # [B*T, C]
 
         visual_gl=torch.cat((visual_feat_before_grounding_nega,visual_feat_grd_after_grounding_nega),dim=-1)
         visual_feat_grd=self.tanh(visual_gl)
@@ -208,13 +208,13 @@ class AVQA_Fusion_Net(nn.Module):
         B = xq.shape[1]
         visual_feat_grd_be = visual_feat_grd_posi.view(B, -1, 512)   # [B, T, 512]
         visual_feat_grd=visual_feat_grd_be.permute(1,0,2)
-        
+
         ## attention, question as query on visual_feat_grd
         visual_feat_att = self.attn_v(xq, visual_feat_grd, visual_feat_grd, attn_mask=None, key_padding_mask=None)[0].squeeze(0)
         src = self.linear12(self.dropout1(F.relu(self.linear11(visual_feat_att))))
         visual_feat_att = visual_feat_att + self.dropout2(src)
         visual_feat_att = self.norm1(visual_feat_att)
-    
+
         # attention, question as query on audio
         audio_feat_be=audio_feat_pure.view(B, -1, 512)
         audio_feat = audio_feat_be.permute(1, 0, 2)
@@ -222,7 +222,7 @@ class AVQA_Fusion_Net(nn.Module):
         src = self.linear22(self.dropout3(F.relu(self.linear21(audio_feat_att))))
         audio_feat_att = audio_feat_att + self.dropout4(src)
         audio_feat_att = self.norm2(audio_feat_att)
-        
+
         feat = torch.cat((audio_feat_att+audio_feat_be.mean(dim=-2).squeeze(), visual_feat_att+visual_feat_grd_be.mean(dim=-2).squeeze()), dim=-1)
         feat = self.tanh(feat)
         feat = self.fc_fusion(feat)

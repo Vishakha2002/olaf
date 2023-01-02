@@ -3,31 +3,42 @@ https://github.com/suyashkumar/ssl-proxy If you need reverse proxy in front of s
 """
 
 import json
+import logging
 import os
 import re
 import time
 from io import BytesIO
 
-# from pprint import pprint
-# from tkinter import Y
-
 import numpy as np
+import requests
 import streamlit as st
 import streamlit.components.v1 as components
-
-# import tensorflow as tf
 import torch
 import torch.nn as nn
 import whisper
+
 from moviepy.editor import VideoFileClip
 from pytube import YouTube
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from audio_feature.extract_audio_vggish_feat import generate_audio_vggish_features
-from music_avqa import OlafInput, OlafBatchInput, ToTensor, test
+from audio_feature.extract_audio_vggish_feat import \
+    generate_audio_vggish_features
+from music_avqa import OlafBatchInput, OlafInput, ToTensor, test
 from net_grd_avst.net_avst import AVQA_Fusion_Net
 from video_feature.extract_resnet18_14x14 import extract_video_feature
+
+logging.basicConfig(filename='olaf.log', encoding='utf-8', level=logging.DEBUG)
+# create console handler and set level to debug
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+# create formatter
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# add formatter to ch
+ch.setFormatter(formatter)
+log = logging.getLogger(__name__)
+# add ch to logger
+log.addHandler(ch)
 
 # This we are doing for vggish
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
@@ -73,28 +84,20 @@ def parse_video_event(video_event):
     print(st.session_state.is_video_paused)
     if video_event and video_event.get("name") == "onPause":
         st.session_state.is_video_paused = True
-        print("video got paused")
+        log.debug("video got paused")
     if video_event and video_event.get("name") == "onProgress":
-        # print("Inside onProgres")
+
         if video_event.get("data") and isinstance(video_event.get("data"), dict):
             frame_stopped_at = video_event["data"].get("playedSeconds")
-            # print(f"you paused the video at {frame_stopped_at} session state {st.session_state.is_video_paused}")
+            log.debug(f"you paused the video at {frame_stopped_at} session state {st.session_state.is_video_paused}")
             if st.session_state.is_video_paused:
-                print(f"you paused the video at {frame_stopped_at}")
+                log.debug(f"you paused the video at {frame_stopped_at}")
                 st.session_state.frame_stopped_at = frame_stopped_at
                 st.session_state.is_video_paused = False
-                # st.write(st.session_state)
 
 
-def initialize_session_state():
-    """
-    This method sets the variables required for olaf to work in
-    streamlit session state.
-    """
-    if "is_video_paused" not in st.session_state:
-        st.session_state["is_video_paused"] = False
-    if "frame_stopped_at" not in st.session_state:
-        st.session_state["frame_stopped_at"] = 0
+
+
 
 
 def extract_audio_features():
@@ -152,20 +155,6 @@ def extract_audio_features():
     pass
 
 
-def get_audio_wav(audio_filename, video_path) -> str:
-    """ """
-    raw_audio_dir = "data/raw_audio"
-    saved_audio = os.path.join(os.getcwd(), raw_audio_dir, audio_filename)
-
-    if audio_filename not in os.listdir(raw_audio_dir):
-        video = VideoFileClip(video_path)
-        audio_file = video.audio
-        audio_file.write_audiofile(saved_audio, fps=16000)
-        print(f"finish video id: {saved_audio}")
-
-    return saved_audio
-
-
 def extract_frames(video, dst):
 
     command1 = "ffmpeg "
@@ -174,14 +163,31 @@ def extract_frames(video, dst):
     command1 += "-r " + "1 "
     command1 += "{0}/%06d.jpg".format(dst)
 
-    print(command1)
+    log.info(command1)
 
     exit_code = os.system(command1)
 
     if exit_code != 0:
+        log.error(f"Not able to run ffmpeg. command {command1}")
         raise Exception("Not able to run ffmpeg")
 
     return
+
+
+def get_audio_wav(audio_filename, video_path) -> str:
+    """
+    Given the video file(i.e. video_path), extract audio and save it as audio_filename
+    """
+    raw_audio_dir = "data/raw_audio"
+    saved_audio = os.path.join(os.getcwd(), raw_audio_dir, audio_filename)
+
+    if audio_filename not in os.listdir(raw_audio_dir):
+        video = VideoFileClip(video_path)
+        audio_file = video.audio
+        audio_file.write_audiofile(saved_audio, fps=16000)
+        log.info(f"finish video id: {saved_audio}")
+
+    return saved_audio
 
 
 def preprocess_youtube_video(yt_url, frontend_dev):
@@ -195,12 +201,14 @@ def preprocess_youtube_video(yt_url, frontend_dev):
     """
     saved_audio = None
     yt_urls = []
+    dictionary = {}
 
+    # Check if the youtube url has been preprocessed
     with open("data/preprocessed_urls.txt") as my_file:
         yt_urls = [line.rstrip("\n") for line in my_file]
 
         if yt_url in yt_urls:
-            print(f"!!!!!!!!!! Already preprocessed {yt_url}. !!!!!!!!!!")
+            log.info(f"{yt_url} is already processed.")
             return
 
     video_object = YouTube(yt_url)
@@ -211,48 +219,49 @@ def preprocess_youtube_video(yt_url, frontend_dev):
     video_filename = video_title + ".mp4"
     audio_filename = video_title + ".wav"
 
-    if yt_url not in st.session_state:
-        extracted_frames = False
-        with st.spinner("Preprocessing: Video."):
-            # start video download
-            saved_video = (
-                video_object.streams.filter(mime_type="video/mp4", res="720p")
-                .first()
-                .download(filename=video_filename, output_path="data/raw_video")
+    extracted_frames = False
+    log.info(f"Preprocessing Video {video_title}")
+    with st.spinner(f"Preprocessing Video {video_title}"):
+        # start video download
+        saved_video = (
+            video_object.streams.filter(mime_type="video/mp4", res="720p")
+            .first()
+            .download(filename=video_filename, output_path="data/raw_video")
+        )
+        log.info(f"Downloaded video at {saved_video}")
+
+        if not frontend_dev:
+            # Extract Audio from the saved video
+            saved_audio = get_audio_wav(
+                audio_filename=audio_filename, video_path=saved_video
             )
-            print(f"Downloaded video at {saved_video}")
+            log.info(f"Extracted audio saved at {saved_audio}")
 
-            if not frontend_dev:
-                # Extract Audio from the saved video
-                saved_audio = get_audio_wav(
-                    audio_filename=audio_filename, video_path=saved_video
-                )
-                print(f"Extracted Audio saved at {saved_audio}")
-
-                # Here we will extract frames from the saved video file
-                try:
-                    if not os.path.exists(video_frame_path):
-                        print(
-                            f"Creating a new folder for extracting video frames {video_frame_path}"
-                        )
-                        os.makedirs(video_frame_path)
+            # Here we will extract frames from the saved video file
+            try:
+                if not os.path.exists(video_frame_path):
+                    log.info(
+                        f"Creating a new folder for extracting video frames {video_frame_path}"
+                    )
+                    os.makedirs(video_frame_path)
+                frame_count = len(os.listdir(video_frame_path))
+                if frame_count == 0:
+                    extract_frames(saved_video, video_frame_path)
                     frame_count = len(os.listdir(video_frame_path))
-                    if frame_count == 0:
-                        extract_frames(saved_video, video_frame_path)
-                        frame_count = len(os.listdir(video_frame_path))
-                    print(
-                        f"Extracted Video frames saved at {video_frame_path}. Count: {frame_count}"
-                    )
-                    extracted_frames = True
+                log.info(
+                    f"Extracted Video frames saved at {video_frame_path}. Count: {frame_count}"
+                )
+                extracted_frames = True
 
-                    vggish_audio_feature_file_path = generate_audio_vggish_features(
-                        saved_audio
-                    )
-                    resnet_video_feature_file_path = extract_video_feature(
-                        video_frame_path
-                    )
-                except Exception:
-                    raise
+                vggish_audio_feature_file_path = generate_audio_vggish_features(
+                    saved_audio
+                )
+                resnet_video_feature_file_path = extract_video_feature(
+                    video_frame_path
+                )
+            except Exception:
+                log.exception(f"Unable to process video {video_title}/ url {yt_url}")
+                raise
 
         preprocess_state = {
             "video_title": video_title,
@@ -267,20 +276,17 @@ def preprocess_youtube_video(yt_url, frontend_dev):
             ),
             "extracted_frames": extracted_frames,
         }
-        # st.session_state[yt_url] = preprocess_state
-        if yt_url not in yt_urls:
-            with open("data/preprocessed_urls.txt", "a", encoding="utf-8") as my_file:
-                my_file.write(yt_url + "\n")
 
-            with open("data/preprocessed_urls_metadata.txt") as my_file:
-                dictionary = json.load(my_file)
+        with open("data/preprocessed_urls.txt", "a", encoding="utf-8") as my_file:
+            my_file.write(yt_url + "\n")
 
-            dictionary[yt_url] = preprocess_state
+        with open("data/preprocessed_urls_metadata.txt") as my_file:
+            dictionary = json.load(my_file)
 
-            with open("data/preprocessed_urls_metadata.txt", "w") as outfile:
+        dictionary[yt_url] = preprocess_state
+
+        with open("data/preprocessed_urls_metadata.txt", "w") as outfile:
                 json.dump(dictionary, outfile)
-
-        # st.write(st.session_state[yt_url])
 
 
 def run_batch_pre_processing(frontend_dev):
@@ -316,24 +322,6 @@ def run_batch_pre_processing(frontend_dev):
     //     "question_deleted": 0,
     //     "anser": "yes"
     //   },
-    //   {
-    //     "video_id": "00001914",
-    //     "question_id": 1677,
-    //     "type": "[\"Audio-Visual\", \"Existential\"]",
-    //     "question_content": "Is the <Object> in the video always playing?",
-    //     "templ_values": "[\"bass\"]",
-    //     "question_deleted": 0,
-    //     "anser": "no"
-    //   },
-    //   {
-    //     "video_id": "00001753",
-    //     "question_id": 15501,
-    //     "type": "[\"Visual\", \"Location\"]",
-    //     "question_content": "What kind of instrument is the <LRer> instrument? ",
-    //     "templ_values": "[\"righttest\"]",
-    //     "question_deleted": 0,
-    //     "anser": "bass"
-    //   }
      this needs to be removed later.
     """
     yt_urls = [
@@ -393,17 +381,28 @@ def run_batch_through_avqa_model():
     test(model, test_loader)
 
 
+def initialize_session_state():
+    """
+    This method sets the variables required for olaf to work in
+    streamlit session state.
+    """
+    if "is_video_paused" not in st.session_state:
+        st.session_state["is_video_paused"] = False
+    if "frame_stopped_at" not in st.session_state:
+        st.session_state["frame_stopped_at"] = 0
+
+
 def main(frontend_dev):
     """
     Olaf main application script.
     """
     initialize_session_state()
 
-    st.set_page_config(
-        layout="wide",
-    )
+    # st.set_page_config(
+    #     layout="wide",
+    # )
 
-    is_batch_input = st.radio("Is batch processing?", ("Yes", "No"))
+    is_batch_input = st.radio("Is batch processing?", ["Yes", "No"], horizontal= True)
     is_batch = is_batch_input == "Yes"
 
     # Setup for streamlit_player
@@ -430,18 +429,17 @@ def main(frontend_dev):
         run_batch_through_avqa_model()
 
     else:
+        # Variable that need to be fed to AVQA Model.
         olaf_pre_process_context = {}
+
+        # XXX Take user input instead of harcoding.
         yt_urls = [
             "https://www.youtube.com/watch?v=6gQ7m0c4ReI",
             "https://youtu.be/is68rlOzEio",
         ]
-
-        # XXX Take user input instead of harcoding.
-
         yt_url = st.selectbox("Please select a video to be play", options=yt_urls)
 
-        # video_uri = st.session_state[yt_url].get('raw_video')
-        with st.spinner("Pre processing video..."):
+        with st.spinner(f"Pre processing video {yt_url}..."):
             preprocess_youtube_video(yt_url, frontend_dev)
         with open("data/preprocessed_urls_metadata.txt") as my_file:
             olaf_pre_process_context = json.load(my_file)
@@ -472,6 +470,7 @@ def main(frontend_dev):
                             video_event, default="whisper"
                         )
                         st.session_state["current_question"] = transcription
+                        log.info("User Question: {transcription}")
 
                         placeholder.text(transcription)
                     else:
@@ -527,6 +526,15 @@ def main(frontend_dev):
                         # answers = list(olaf_input_obj.answer_vocab)
 
 
+def download_viggish_model():
+    if os.path.exists("vggish_model.ckpt"):
+        log.info("Found vggish_model.ckpt, no need to download it")
+        return
+    URL = "https://storage.googleapis.com/audioset/vggish_model.ckpt"
+    response = requests.get(URL)
+    open("vggish_model.ckpt", "wb").write(response.content)
+    log.info("Downloaded vggish_model.ckpt")
+
 def setup_directory() -> None:
     """
     Before you begin setup data directories
@@ -567,10 +575,14 @@ def setup_directory() -> None:
         open("data/preprocessed_urls.txt", "a").close()
     if not os.path.exists("data/preprocessed_urls_metadata.txt"):
         with open("data/preprocessed_urls_metadata.txt", "w") as foo:
-            yo = {}
-            json.dump(yo, foo)
+            tmp = {}
+            json.dump(tmp, foo)
 
 
 if __name__ == "__main__":
+    log.info("Staring Olaf Application")
+    log.info("Setting up directories for Olaf Application")
     setup_directory()
+    log.info("Running Olaf main script")
+    download_viggish_model()
     main(frontend_dev=False)
