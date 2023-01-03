@@ -8,6 +8,7 @@ import os
 import re
 import tarfile
 import time
+import shutil
 from io import BytesIO
 
 import numpy as np
@@ -518,7 +519,7 @@ def main(frontend_dev):
                         # answers = list(olaf_input_obj.answer_vocab)
 
 def setup_frontend():
-    os.rmdir('av_player/frontend/')
+    shutil.rmtree('av_player/frontend/')
     my_tar = tarfile.open('av_player/frontend.tar.gz')
     my_tar.extractall("./av_player/")
     my_tar.close()
