@@ -29,7 +29,6 @@ from music_avqa import OlafBatchInput, OlafInput, ToTensor, test
 from net_grd_avst.net_avst import AVQA_Fusion_Net
 from video_feature.extract_resnet18_14x14 import extract_video_feature
 
-# logging.basicConfig(filename="logs/olaf.log", encoding="utf-8", level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -48,7 +47,7 @@ def whisper_transcription(audio_file):
     # pprint(result)
     return result["text"]
 
-@st.cache
+
 def transcribe_question(video_event, default="assemblyai"):
     text = ""
     # XXX Vishakha move this to a temp file.
@@ -149,6 +148,7 @@ def extract_audio_features():
     """
     pass
 
+
 @st.cache
 def extract_frames(video, dst):
 
@@ -168,6 +168,7 @@ def extract_frames(video, dst):
 
     return
 
+
 @st.cache
 def get_audio_wav(audio_filename, video_path) -> str:
     """
@@ -183,6 +184,7 @@ def get_audio_wav(audio_filename, video_path) -> str:
         log.info(f"finish video id: {saved_audio}")
 
     return saved_audio
+
 
 @st.cache
 def preprocess_youtube_video(yt_url, frontend_dev):
@@ -282,7 +284,6 @@ def preprocess_youtube_video(yt_url, frontend_dev):
             json.dump(dictionary, outfile)
 
 
-@st.cache
 def run_batch_pre_processing(frontend_dev):
     """
         XXX Questions for video 19   // Video 19
@@ -356,7 +357,6 @@ def run_batch_pre_processing(frontend_dev):
     )
 
 
-@st.cache
 def run_batch_through_avqa_model():
     test_dataset = OlafBatchInput(
         label="./data/pretrained/olaf-test.json",
@@ -375,6 +375,7 @@ def run_batch_through_avqa_model():
     model.load_state_dict(torch.load("net_grd_avst/avst_models/avst.pt"))
     test(model, test_loader)
 
+
 @st.cache
 def initialize_session_state():
     """
@@ -387,18 +388,60 @@ def initialize_session_state():
         st.session_state["frame_stopped_at"] = 0
 
 
+def get_resp_from_avqa_model(olaf_pre_process_context):
+    # Getting Olafdataset
+    placeholder_2 = st.empty()
+    with st.spinner("Getting response from MUSIC_AVQA Model..."):
+
+
+        olaf_input_obj = OlafInput(
+            vocab_label="/scratch/vtyagi14/data/json/avqa-test.json",
+            audio_vggish_features_dir="/scratch/vtyagi14/data/feats/vggish",
+            video_res14x14_dir="/scratch/vtyagi14/data/feats/res18_14x14",
+            current_answer="one",
+            transform=transforms.Compose([ToTensor()]),
+            # current_question = transcription,
+            current_question="How many instruments are being played?",
+            olaf_context=olaf_pre_process_context,
+            is_batch=False,
+        )
+        # answer_labels = olaf_input_obj.answer_label
+        model = AVQA_Fusion_Net()
+        model = nn.DataParallel(model)
+        model = model.to("cuda")
+        test_loader = DataLoader(olaf_input_obj, batch_size=1, pin_memory=True)
+        model.load_state_dict(torch.load("net_grd_avst/avst_models/avst.pt"))
+        model.eval()
+        with torch.no_grad():
+            for batch_idx, sample in enumerate(test_loader):
+                print(f"Vishakha batch id here is {batch_idx}")
+                audio = sample["audio"].to("cuda")
+                visual_posi = sample["visual_posi"].to("cuda")
+                visual_nega = sample["visual_nega"].to("cuda")
+                question = sample["question"].to("cuda")
+                target = sample["label"].to("cuda")
+                preds_qa, out_match_posi, out_match_nega = model(
+                    audio, visual_posi, visual_nega, question
+                )
+                preds = preds_qa
+                # print(preds)
+                _, predicted = torch.max(preds.data, 1)
+                is_correct = target == predicted
+
+                print(type(preds))
+                print(preds)
+                print(predicted)
+                placeholder_2.write(is_correct)
+
 def main(frontend_dev):
     """
     Olaf main application script.
     """
     initialize_session_state()
 
-    # st.set_page_config(
-    #     layout="wide",
-    # )
-
-    is_batch_input = st.radio("Is batch processing?", ["No", "Yes"], horizontal=True)
-    is_batch = is_batch_input == "Yes"
+    # is_batch_input = st.radio("Is batch processing?", ["No", "Yes"], horizontal=True)
+    # is_batch = is_batch_input == "Yes"
+    is_batch =False
 
     # Setup for streamlit_player
     _SUPPORTED_EVENTS = [
@@ -414,7 +457,6 @@ def main(frontend_dev):
         "onError",
     ]
     options = {
-        # "events": ["onProgress", "onPause"],
         "events": _SUPPORTED_EVENTS,
         "progress_interval": 1000,
     }
@@ -434,14 +476,13 @@ def main(frontend_dev):
         ]
         yt_url = st.selectbox("Please select a video to be play", options=yt_urls)
 
-        # with st.spinner(f"Pre processing video {yt_url}..."):
         preprocess_youtube_video(yt_url, frontend_dev)
         with open("data/preprocessed_urls_metadata.txt") as my_file:
             olaf_pre_process_context = json.load(my_file)
 
         if frontend_dev:
             st.write(
-                f"Here the vide is saved at {olaf_pre_process_context[yt_url]['raw_video']}"
+                f"Here the video is saved at {olaf_pre_process_context[yt_url]['raw_video']}"
             )
 
         av_player_parent_dir = os.path.dirname(os.path.abspath(__file__))
@@ -465,60 +506,13 @@ def main(frontend_dev):
                             video_event, default="whisper"
                         )
                         st.session_state["current_question"] = transcription
-                        log.info("User Question: {transcription}")
+                        log.info(f"User Question: {transcription}")
 
                         placeholder.text(transcription)
                     else:
                         placeholder.text("Testing Frontend code")
 
-                # Getting Olafdataset
-                placeholder_2 = st.empty()
-                with st.spinner("Getting response from MUSIC_AVQA Model..."):
-                    # olaf_context = st.session_state[yt_url]
-                    # olaf_context = {}
-                    # with open("data/preprocessed_urls_metadata.txt") as my_file:
-                    #     olaf_context = json.load(my_file).get(yt_url)
-
-                    olaf_input_obj = OlafInput(
-                        vocab_label="/scratch/vtyagi14/data/json/avqa-test.json",
-                        audio_vggish_features_dir="/scratch/vtyagi14/data/feats/vggish",
-                        video_res14x14_dir="/scratch/vtyagi14/data/feats/res18_14x14",
-                        current_answer="one",
-                        transform=transforms.Compose([ToTensor()]),
-                        # current_question = transcription,
-                        current_question="How many instruments are being played?",
-                        olaf_context=olaf_pre_process_context,
-                        is_batch=False,
-                    )
-                    # answer_labels = olaf_input_obj.answer_label
-                    model = AVQA_Fusion_Net()
-                    model = nn.DataParallel(model)
-                    model = model.to("cuda")
-                    test_loader = DataLoader(olaf_input_obj, batch_size=1, pin_memory=True)
-                    model.load_state_dict(torch.load("net_grd_avst/avst_models/avst.pt"))
-                    model.eval()
-                    with torch.no_grad():
-                        for batch_idx, sample in enumerate(test_loader):
-                            print(f"Vishakha batch id here is {batch_idx}")
-                            audio = sample["audio"].to("cuda")
-                            visual_posi = sample["visual_posi"].to("cuda")
-                            visual_nega = sample["visual_nega"].to("cuda")
-                            question = sample["question"].to("cuda")
-                            target = sample["label"].to("cuda")
-                            preds_qa, out_match_posi, out_match_nega = model(
-                                audio, visual_posi, visual_nega, question
-                            )
-                            preds = preds_qa
-                            # print(preds)
-                            _, predicted = torch.max(preds.data, 1)
-                            is_correct = target == predicted
-
-                            print(type(preds))
-                            print(preds)
-                            print(predicted)
-                            placeholder_2.write(is_correct)
-
-                            # answers = list(olaf_input_obj.answer_vocab)
+                get_resp_from_avqa_model(olaf_pre_process_context)
 
 @st.cache
 def setup_frontend():
