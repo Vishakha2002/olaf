@@ -28,16 +28,12 @@ from music_avqa import OlafBatchInput, OlafInput, ToTensor, test
 from net_grd_avst.net_avst import AVQA_Fusion_Net
 from video_feature.extract_resnet18_14x14 import extract_video_feature
 
-# logging.basicConfig(filename="logs/olaf.log", encoding="utf-8", level=logging.DEBUG)
-# create console handler and set level to debug
+# logging.basicConfig(filename="logs/olaf.log", encoding="utf-8", level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
-# create formatter
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-# add formatter to ch
 ch.setFormatter(formatter)
 log = logging.getLogger(__name__)
-# add ch to logger
 log.addHandler(ch)
 
 # This we are doing for vggish
@@ -435,8 +431,8 @@ def main(frontend_dev):
         ]
         yt_url = st.selectbox("Please select a video to be play", options=yt_urls)
 
-        with st.spinner(f"Pre processing video {yt_url}..."):
-            preprocess_youtube_video(yt_url, frontend_dev)
+        # with st.spinner(f"Pre processing video {yt_url}..."):
+        preprocess_youtube_video(yt_url, frontend_dev)
         with open("data/preprocessed_urls_metadata.txt") as my_file:
             olaf_pre_process_context = json.load(my_file)
 
@@ -521,6 +517,12 @@ def main(frontend_dev):
 
                         # answers = list(olaf_input_obj.answer_vocab)
 
+def setup_frontend():
+    os.rmdir('av_player/frontend/')
+    my_tar = tarfile.open('av_player/frontend.tar.gz')
+    my_tar.extractall("./av_player/")
+    my_tar.close()
+
 
 def download_required_files():
     if os.path.exists("vggish_model.ckpt"):
@@ -544,9 +546,7 @@ def download_required_files():
         ffmpeg_file.extractall('./ffmpeg_dir')
         ffmpeg_file.close()
         log.info("Setting ffmpeg file path")
-        os.environ["PATH"] += os.pathsep + os.path.join(os.getcwd(), "ffmpeg_dir/ffmpeg-git-20220910-i686-static/")
-
-
+    os.environ["PATH"] += os.pathsep + os.path.join(os.getcwd(), "ffmpeg_dir/ffmpeg-git-20220910-i686-static/")
 
 def setup_directory() -> None:
     """
@@ -604,5 +604,6 @@ log.info("Setting up directories for Olaf Application")
 setup_directory()
 log.info("Running Olaf main script")
 download_required_files()
+setup_frontend()
 print(os.environ["PATH"])
 main(frontend_dev=False)

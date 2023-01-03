@@ -51,7 +51,7 @@ const StreamlitPlayer = ({ args }: ComponentProps) => {
   };
 
   return (
-    <div ref={divRef} id="container" style={{ height: "800px" }}>
+    <div ref={divRef} id="container" style={{ height: "400px" }}>
       <br></br>
       <br></br>
       <HeightObserver

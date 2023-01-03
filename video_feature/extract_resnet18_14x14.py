@@ -49,7 +49,7 @@ def extract_feats(model, framepath, load_image_fn):
 
     outfile = os.path.join(output_directory, raw_name + ".npy")
     if os.path.exists(outfile):
-        log.info(outfile, "already exist!")
+        log.info("{outfile} already exist!")
         return outfile
 
     ### image
@@ -81,8 +81,7 @@ def extract_feats(model, framepath, load_image_fn):
 
 def extract_video_feature(framepath):
     # XXX maybe needed in Super computer.
-    # os.environ['CUDA_VISIBLE_DEVICES'] = "0, 1"
-    torch.cuda.empty_cache()
+    # os.environ['CUDA_VISIBLE_DEVICES'] = "0, 1, 2"
 
     pretrained_resnet_model = pretrainedmodels.resnet18(pretrained="imagenet")
     load_image_fn = utils.LoadTransformImage(pretrained_resnet_model)
@@ -90,6 +89,10 @@ def extract_video_feature(framepath):
     model = AVQA_Fusion_Net()
     model = nn.DataParallel(model)
     model = model.cuda()
-
-    file_path = extract_feats(model, framepath, load_image_fn)
+    torch.cuda.empty_cache()
+    try:
+        file_path = extract_feats(model, framepath, load_image_fn)
+    except Exception:
+        torch.cuda.empty_cache()
+        file_path = extract_feats(model, framepath, load_image_fn)
     return file_path
