@@ -25,7 +25,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 
 from audio_feature.extract_audio_vggish_feat import generate_audio_vggish_features
-from music_avqa import OlafBatchInput, OlafInput, ToTensor, test
+from music_avqa import OlafBatchInput, OlafSingleInput, ToTensor, test
 from net_grd_avst.net_avst import AVQA_Fusion_Net
 from video_feature.extract_resnet18_14x14 import extract_video_feature
 
@@ -38,7 +38,7 @@ log.addHandler(ch)
 
 # This we are doing for vggish
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"  # set gpu number
+# os.environ["CUDA_VISIBLE_DEVICES"] = "1"  # set gpu number
 
 
 def whisper_transcription(audio_file):
@@ -149,7 +149,6 @@ def extract_audio_features():
     pass
 
 
-@st.cache
 def extract_frames(video, dst):
 
     command1 = "ffmpeg "
@@ -169,7 +168,6 @@ def extract_frames(video, dst):
     return
 
 
-@st.cache
 def get_audio_wav(audio_filename, video_path) -> str:
     """
     Given the video file(i.e. video_path), extract audio and save it as audio_filename
@@ -186,7 +184,6 @@ def get_audio_wav(audio_filename, video_path) -> str:
     return saved_audio
 
 
-@st.cache
 def preprocess_youtube_video(yt_url, frontend_dev):
     """
     To take user input it is import to preprocess the video. Steps:
@@ -219,6 +216,7 @@ def preprocess_youtube_video(yt_url, frontend_dev):
     extracted_frames = False
     log.info(f"Preprocessing Video {video_title}")
     with st.spinner(f"Preprocessing Video {video_title}"):
+        torch.cuda.empty_cache()
         # start video download
         saved_video = (
             video_object.streams.filter(mime_type="video/mp4", res="720p")
@@ -376,7 +374,6 @@ def run_batch_through_avqa_model():
     test(model, test_loader)
 
 
-@st.cache
 def initialize_session_state():
     """
     This method sets the variables required for olaf to work in
@@ -388,16 +385,16 @@ def initialize_session_state():
         st.session_state["frame_stopped_at"] = 0
 
 
-def get_resp_from_avqa_model(olaf_pre_process_context):
+def get_resp_from_avqa_model(olaf_pre_process_context, transcription):
     # Getting Olafdataset
     placeholder_2 = st.empty()
     with st.spinner("Getting response from MUSIC_AVQA Model..."):
 
 
-        olaf_input_obj = OlafInput(
-            vocab_label="/scratch/vtyagi14/data/json/avqa-test.json",
-            audio_vggish_features_dir="/scratch/vtyagi14/data/feats/vggish",
-            video_res14x14_dir="/scratch/vtyagi14/data/feats/res18_14x14",
+        olaf_input_obj = OlafSingleInput(
+            vocab_label="data/json/avqa-test.json",
+            audio_vggish_features_dir="data/features/audio_vggish",
+            video_res14x14_dir="data/features/video_resnet18",
             current_answer="one",
             transform=transforms.Compose([ToTensor()]),
             # current_question = transcription,
@@ -439,9 +436,9 @@ def main(frontend_dev):
     """
     initialize_session_state()
 
-    # is_batch_input = st.radio("Is batch processing?", ["No", "Yes"], horizontal=True)
-    # is_batch = is_batch_input == "Yes"
-    is_batch =False
+    is_batch_input = st.radio("Is batch processing?", ["No", "Yes"], horizontal=True)
+    is_batch = is_batch_input == "Yes"
+    # is_batch =False
 
     # Setup for streamlit_player
     _SUPPORTED_EVENTS = [
@@ -508,11 +505,11 @@ def main(frontend_dev):
                         st.session_state["current_question"] = transcription
                         log.info(f"User Question: {transcription}")
 
-                        placeholder.text(transcription)
+                        placeholder.text(f"User Question: {transcription}")
                     else:
                         placeholder.text("Testing Frontend code")
 
-                get_resp_from_avqa_model(olaf_pre_process_context)
+                get_resp_from_avqa_model(olaf_pre_process_context, transcription)
 
 @st.cache
 def setup_frontend():

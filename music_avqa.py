@@ -38,8 +38,11 @@ Inputs:
 Question format:
 
 """
+import logging
 import random
 import os
+from net_grd_avst.net_avst import AVQA_Fusion_Net
+import torch.nn as nn
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"  # set gpu number
@@ -54,6 +57,7 @@ from torchvision import transforms
 
 from typing import Dict, Tuple
 
+log = logging.getLogger(__name__)
 
 # class ToTensor(object):
 #     """
@@ -115,7 +119,6 @@ class OlafInput(Dataset):
         transform=None,
         current_question=None,
         olaf_context={},
-        is_batch=True,
     ):
         """
         Dataset class to represent data samples.
@@ -128,7 +131,6 @@ class OlafInput(Dataset):
         self.word_to_idx = set()
         self.question_vocab = set()
         self.answer_vocab = []
-        self.is_batch = is_batch
 
         # I believe this is what we would need to update in order to provide input from olaf frontend.
         # XXX Vishakha what does label means here
@@ -228,191 +230,131 @@ class OlafInput(Dataset):
         self.word_to_idx = {word: i for i, word in enumerate(self.question_vocab)}
 
     def __len__(self):
-        if self.is_batch:
-            return len(self.samples)
-
         return 1
 
     def __getitem__(self, idx):
-        """
-        sample = self.samples[idx]
-        # sample example
-        {
-            "video_id": "00000093",
-            "question_id": 12,
-            "type": "[\"Audio\", \"Counting\"]",
-            "question_content": "How many musical instruments were heard throughout the video?",
-            "templ_values": "[]",
-            "question_deleted": 0,
-            "anser": "one"
-        }
-        # This is the name of the video. In our case, it would be the name of our video
-        name = sample['video_id']
-        # Load vggish audio features
-        audio = np.load(os.path.join(self.audio_dir, name + '.npy'))
-        # XXX What does it do? This seems like a 2 dimension array. and slicing is happening.
+        vggish_audio_feature = np.load(
+            self.olaf_context.get("vggish_audio_feature_file_path")
+        )
+        print("Vishakha vggish_audio_feature before [::6, :] ~~~~~")
+        print(f"{vggish_audio_feature.shape}")
+        # print("Vishakha vggish_audio_feature here ~~~~~")
+        # print(f"{vggish_audio_feature.shape}")
+        # XXX TODO What does it do?
+        # This seems like a 2 dimension array. and slicing is happening.
         # It seems we are selecting every 6th frame feature
-        audio = audio[::6, :]
+        vggish_audio_feature = vggish_audio_feature[::6, :]
+        print("Vishakha vggish_audio_feature after [::6, :] ~~~~~")
+        print(f"{vggish_audio_feature.shape}")
 
-        # visual_out_res18_path = '/home/guangyao_li/dataset/avqa-features/visual_14x14'
-        # Load resent18 features.
-        visual_posi = np.load(os.path.join(self.video_res14x14_dir, name + '.npy'))
-
-        # visual_posi [60, 512, 14, 14], select 10 frames from one video
+        # resnet_video_feature
+        visual_posi = np.load(
+            self.olaf_context.get("resnet_video_feature_file_path")
+        )
+        print("Vishakha visual_posi before [::6, :] ~~~~~")
+        print(f"{visual_posi.shape}")
         # XXX Why are we doing this??? It seems we are selecting every 6th frame feature
         visual_posi = visual_posi[::6, :]
-        video_idx=self.video_list.index(name)
+        print("Vishakha visual_posi after [::6, :] ~~~~~")
+        print(f"{visual_posi.shape}")
+        visual_posi = visual_posi[:-1, :]
+        print("Vishakha visual_posi after [:-1, :] ~~~~~")
+        print(f"{visual_posi.shape}")
 
+        # I am not sure what is happening here but trying to reverse engineer their code.
+        # SOT https://github.com/GeWu-Lab/MUSIC-AVQA/blob/10420dce9df1e27e82500da31c18efdba98bc077/net_grd_avst/dataloader_avst.py#L135
         for i in range(visual_posi.shape[0]):
-            while(1):
-                neg_frame_id = random.randint(0, self.video_len - 1)
-                if (int(neg_frame_id/60) != video_idx):
-                    break
+            neg_frame_id = random.randint(0, self.total_sample_video_count - 1)
 
             neg_video_id = int(neg_frame_id / 60)
             neg_frame_flag = neg_frame_id % 60
-            neg_video_name = self.video_list[neg_video_id]
-            visual_nega_out_res18=np.load(os.path.join(self.video_res14x14_dir, neg_video_name + '.npy'))
+            neg_video_name = list(self.video_ids)[neg_video_id]
+
+            visual_nega_out_res18 = np.load(
+                os.path.join(self.video_res14x14_dir, neg_video_name + ".npy")
+            )
 
             visual_nega_out_res18 = torch.from_numpy(visual_nega_out_res18)
-            visual_nega_clip=visual_nega_out_res18[neg_frame_flag,:,:,:].unsqueeze(0)
+            visual_nega_clip = visual_nega_out_res18[
+                neg_frame_flag, :, :, :
+            ].unsqueeze(0)
 
-            if(i==0):
-                visual_nega=visual_nega_clip
+            if i == 0:
+                visual_nega = visual_nega_clip
             else:
-                visual_nega=torch.cat((visual_nega,visual_nega_clip),dim=0)
+                visual_nega = torch.cat((visual_nega, visual_nega_clip), dim=0)
 
-        # visual nega [60, 512, 14, 14]
+        print(f"vishakha visual_nega shape {visual_nega.shape}")
 
-        # question
-        question_id = sample['question_id']
-        question = sample['question_content'].rstrip().split(' ')
-        question[-1] = question[-1][:-1]
+        question = self.current_question.split(" ")
+        if question[-1] == "?":
+            question[-1] = question[-1][:-1]
 
-        p = 0
-        for pos in range(len(question)):
-            if '<' in question[pos]:
-                question[pos] = ast.literal_eval(sample['templ_values'])[p]
-                p += 1
-        if len(question) < self.max_len:
-            n = self.max_len - len(question)
-            for i in range(n):
-                question.append('<pad>')
-        idxs = [self.word_to_ix[w] for w in question]
+        idxs = [self.word_to_idx[w] for w in question]
         ques = torch.tensor(idxs, dtype=torch.long)
 
-        # answer
-        answer = sample['anser']
-        label = ids_to_multinomial(answer, self.ans_vocab)
+        label = ids_to_multinomial(self.current_answer, self.answer_vocab)
         label = torch.from_numpy(np.array(label)).long()
 
-        sample = {'audio': audio, 'visual_posi': visual_posi, 'visual_nega': visual_nega, 'question': ques, 'label': label}
-
-        if self.transform:
-            sample = self.transform(sample)
-
-        {
-            "video_title": "Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video",
-            "raw_audio": "/home/vishakha/olaf/data/raw_audio/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.wav",
-            "raw_video": "/home/vishakha/olaf/data/raw_video/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.mp4",
-            "video_frame_path": "/home/vishakha/olaf/data/frames/video/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video",
-            "vggish_audio_feature_file_path": "/home/vishakha/olaf/data/features/audio_vggish/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.npy",
-            "resnet_video_feature_file_path": "/home/vishakha/olaf/data/features/video_resnet18/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.npy",
-            "extracted_frames": True
+        single_sample = {
+            "audio": vggish_audio_feature,
+            "visual_posi": visual_posi,
+            "visual_nega": visual_nega,
+            "question": ques,
+            "label": label,
         }
 
+        if self.transform:
+            sample = self.transform(single_sample)
         return sample
-        """
-        # XXX Comeup with a better name and reset default as you become aware of them
-        # single_sample = {
-        #     'audio': None,
-        #     'visual_posi': None,
-        #     'visual_nega': None,
-        #     'question': None,
-        #     'label': None
-        # }
 
-        if not self.is_batch:
-            # If we are here that means we need to take input from olaf rather then do batch processing.
 
-            vggish_audio_feature = np.load(
-                self.olaf_context.get("vggish_audio_feature_file_path")
-            )
-            print("Vishakha vggish_audio_feature before [::6, :] ~~~~~")
-            print(f"{vggish_audio_feature.shape}")
-            # print("Vishakha vggish_audio_feature here ~~~~~")
-            # print(f"{vggish_audio_feature.shape}")
-            # XXX TODO What does it do?
-            # This seems like a 2 dimension array. and slicing is happening.
-            # It seems we are selecting every 6th frame feature
-            vggish_audio_feature = vggish_audio_feature[::6, :]
-            print("Vishakha vggish_audio_feature after [::6, :] ~~~~~")
-            print(f"{vggish_audio_feature.shape}")
 
-            # resnet_video_feature
-            visual_posi = np.load(
-                self.olaf_context.get("resnet_video_feature_file_path")
-            )
-            print("Vishakha visual_posi before [::6, :] ~~~~~")
-            print(f"{visual_posi.shape}")
-            # XXX Why are we doing this??? It seems we are selecting every 6th frame feature
-            visual_posi = visual_posi[::6, :]
-            print("Vishakha visual_posi after [::6, :] ~~~~~")
-            print(f"{visual_posi.shape}")
-            visual_posi = visual_posi[:-1, :]
-            print("Vishakha visual_posi after [:-1, :] ~~~~~")
-            print(f"{visual_posi.shape}")
+class OlafSingleInput(Dataset):
+    def __init__(self, label, audio_dir, video_res14x14_dir, transform=None, mode_flag="train"):
+        samples = json.load(open("./data/pretrained/avqa-train.json", "r"))
 
-            # I am not sure what is happening here but trying to reverse engineer their code.
-            # SOT https://github.com/GeWu-Lab/MUSIC-AVQA/blob/10420dce9df1e27e82500da31c18efdba98bc077/net_grd_avst/dataloader_avst.py#L135
-            for i in range(visual_posi.shape[0]):
-                neg_frame_id = random.randint(0, self.total_sample_video_count - 1)
+        # nax =  nne
+        ques_vocab = ["<pad>"]
+        ans_vocab = []
+        i = 0
+        for sample in samples:
+            i += 1
+            question = sample["question_content"].rstrip().split(" ")
+            question[-1] = question[-1][:-1]
 
-                neg_video_id = int(neg_frame_id / 60)
-                neg_frame_flag = neg_frame_id % 60
-                neg_video_name = list(self.video_ids)[neg_video_id]
+            p = 0
+            for pos in range(len(question)):
+                if "<" in question[pos]:
+                    question[pos] = ast.literal_eval(sample["templ_values"])[p]
+                    p += 1
 
-                visual_nega_out_res18 = np.load(
-                    os.path.join(self.video_res14x14_dir, neg_video_name + ".npy")
-                )
+            for wd in question:
+                if wd not in ques_vocab:
+                    ques_vocab.append(wd)
+            if sample["anser"] not in ans_vocab:
+                ans_vocab.append(sample["anser"])
 
-                visual_nega_out_res18 = torch.from_numpy(visual_nega_out_res18)
-                visual_nega_clip = visual_nega_out_res18[
-                    neg_frame_flag, :, :, :
-                ].unsqueeze(0)
+        self.ques_vocab = ques_vocab
+        self.ans_vocab = ans_vocab
+        self.word_to_ix = {word: i for i, word in enumerate(self.ques_vocab)}
 
-                if i == 0:
-                    visual_nega = visual_nega_clip
-                else:
-                    visual_nega = torch.cat((visual_nega, visual_nega_clip), dim=0)
+        self.samples = json.load(open(label, "r"))
+        self.max_len = 14  # question length
 
-            print(f"vishakha visual_nega shape {visual_nega.shape}")
+        self.audio_dir = audio_dir
+        self.video_res14x14_dir = video_res14x14_dir
+        self.transform = transform
 
-            question = self.current_question.split(" ")
-            if question[-1] == "?":
-                question[-1] = question[-1][:-1]
+        video_list = []
+        for sample in self.samples:
+            video_name = sample["video_id"]
+            if video_name not in video_list:
+                video_list.append(video_name)
 
-            idxs = [self.word_to_idx[w] for w in question]
-            ques = torch.tensor(idxs, dtype=torch.long)
+        self.video_list = video_list
+        self.video_len = 60 * len(video_list)
 
-            label = ids_to_multinomial(self.current_answer, self.answer_vocab)
-            label = torch.from_numpy(np.array(label)).long()
-
-            single_sample = {
-                "audio": vggish_audio_feature,
-                "visual_posi": visual_posi,
-                "visual_nega": visual_nega,
-                "question": ques,
-                "label": label,
-            }
-
-            if self.transform:
-                sample = self.transform(single_sample)
-            return sample
-
-        raise Exception("Not Implemented for batch processing yet")
-        # XXX Vishakha this code is almost implement at the following link.
-        # https://github.com/GeWu-Lab/MUSIC-AVQA/blob/main/net_grd_avst/dataloader_avst.py#L121
 
 
 class OlafBatchInput(Dataset):
@@ -675,22 +617,48 @@ if __name__ == "__main__":
     # This is from Suoer computer Server
     olaf_context = {
         "video_title": "Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video",
-        "raw_audio": "/home/vtyagi14/olaf/data/raw_audio/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.wav",
-        "raw_video": "/home/vtyagi14/olaf/data/raw_video/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.mp4",
-        "video_frame_path": "/home/vtyagi14/olaf/data/frames/video/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video",
-        "vggish_audio_feature_file_path": "/home/vtyagi14/olaf/data/features/audio_vggish/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.npy",
-        "resnet_video_feature_file_path": "/home/vtyagi14/olaf/data/features/video_resnet18/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.npy",
+        "raw_audio": "/home/vishakha/olaf/data/raw_audio/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.wav",
+        "raw_video": "/home/vishakha/olaf/data/raw_video/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.mp4",
+        "video_frame_path": "/home/vishakha/olaf/data/frames/video/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video",
+        "vggish_audio_feature_file_path": "/home/vishakha/olaf/data/features/audio_vggish/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.npy",
+        "resnet_video_feature_file_path": "/home/vishakha/olaf/data/features/video_resnet18/Marcin__Moonlight_Sonata_on_One_Guitar_Official_Video.npy",
         "extracted_frames": True,
     }
 
     olaf_input_obj = OlafInput(
         vocab_label="data/pretrained/avqa-train.json",
-        audio_vggish_features_dir="/scratch/vtyagi14/data/feats/vggish",
-        video_res14x14_dir="/scratch/vtyagi14/data/feats/res18_14x14",
+        audio_vggish_features_dir="data/features/audio_vggish",
+        video_res14x14_dir="data/features/video_resnet18",
         current_answer="one",
         transform=transforms.Compose([ToTensor()]),
         current_question="How many instruments are sounding in the video?",
         olaf_context=olaf_context,
-        is_batch=False,
+        # is_batch=False,
     )
-    olaf_input_obj.__getitem__(0)
+    # olaf_input_obj.__getitem__(0)
+    model = AVQA_Fusion_Net()
+    model = nn.DataParallel(model)
+    model = model.to("cuda")
+    test_loader = DataLoader(olaf_input_obj, batch_size=1, pin_memory=True)
+    model.load_state_dict(torch.load("net_grd_avst/avst_models/avst.pt"))
+    model.eval()
+    with torch.no_grad():
+        for batch_idx, sample in enumerate(test_loader):
+            print(f"Vishakha batch id here is {batch_idx}")
+            audio = sample["audio"].to("cuda")
+            visual_posi = sample["visual_posi"].to("cuda")
+            visual_nega = sample["visual_nega"].to("cuda")
+            question = sample["question"].to("cuda")
+            target = sample["label"].to("cuda")
+            preds_qa, out_match_posi, out_match_nega = model(
+                audio, visual_posi, visual_nega, question
+            )
+            preds = preds_qa
+            # print(preds)
+            _, predicted = torch.max(preds.data, 1)
+            is_correct = target == predicted
+
+            print(type(preds))
+            print(preds)
+            print(predicted)
+            print(is_correct)

@@ -74,3 +74,11 @@ Finally add it to the os path
 
 ## How to open port in linux
 https://www.digitalocean.com/community/tutorials/opening-a-port-on-linux
+
+
+## to setup the service
+
+(venv) vishakha@Perl-Lab-PC:~/puzzle$ sudo vim /etc/systemd/system/puzzle.service
+(venv) vishakha@Perl-Lab-PC:~/puzzle$ sudo systemctl daemon-reload
+(venv) vishakha@Perl-Lab-PC:~/puzzle$ sudo systemctl start puzzle
+(venv) vishakha@Perl-Lab-PC:~/puzzle$ sudo systemctl status puzzle
