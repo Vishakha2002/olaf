@@ -236,30 +236,28 @@ class OlafInput(Dataset):
         vggish_audio_feature = np.load(
             self.olaf_context.get("vggish_audio_feature_file_path")
         )
-        print("Vishakha vggish_audio_feature before [::6, :] ~~~~~")
-        print(f"{vggish_audio_feature.shape}")
-        # print("Vishakha vggish_audio_feature here ~~~~~")
+        # print("Vishakha vggish_audio_feature before [::6, :] ~~~~~")
         # print(f"{vggish_audio_feature.shape}")
         # XXX TODO What does it do?
         # This seems like a 2 dimension array. and slicing is happening.
         # It seems we are selecting every 6th frame feature
         vggish_audio_feature = vggish_audio_feature[::6, :]
-        print("Vishakha vggish_audio_feature after [::6, :] ~~~~~")
-        print(f"{vggish_audio_feature.shape}")
+        # print("Vishakha vggish_audio_feature after [::6, :] ~~~~~")
+        # print(f"{vggish_audio_feature.shape}")
 
         # resnet_video_feature
         visual_posi = np.load(
             self.olaf_context.get("resnet_video_feature_file_path")
         )
-        print("Vishakha visual_posi before [::6, :] ~~~~~")
-        print(f"{visual_posi.shape}")
+        # print("Vishakha visual_posi before [::6, :] ~~~~~")
+        # print(f"{visual_posi.shape}")
         # XXX Why are we doing this??? It seems we are selecting every 6th frame feature
         visual_posi = visual_posi[::6, :]
-        print("Vishakha visual_posi after [::6, :] ~~~~~")
-        print(f"{visual_posi.shape}")
+        # print("Vishakha visual_posi after [::6, :] ~~~~~")
+        # print(f"{visual_posi.shape}")
         visual_posi = visual_posi[:-1, :]
-        print("Vishakha visual_posi after [:-1, :] ~~~~~")
-        print(f"{visual_posi.shape}")
+        # print("Vishakha visual_posi after [:-1, :] ~~~~~")
+        # print(f"{visual_posi.shape}")
 
         # I am not sure what is happening here but trying to reverse engineer their code.
         # SOT https://github.com/GeWu-Lab/MUSIC-AVQA/blob/10420dce9df1e27e82500da31c18efdba98bc077/net_grd_avst/dataloader_avst.py#L135
@@ -284,7 +282,7 @@ class OlafInput(Dataset):
             else:
                 visual_nega = torch.cat((visual_nega, visual_nega_clip), dim=0)
 
-        print(f"vishakha visual_nega shape {visual_nega.shape}")
+        # print(f"vishakha visual_nega shape {visual_nega.shape}")
 
         question = self.current_question.split(" ")
         if question[-1] == "?":
@@ -307,54 +305,6 @@ class OlafInput(Dataset):
         if self.transform:
             sample = self.transform(single_sample)
         return sample
-
-
-
-class OlafSingleInput(Dataset):
-    def __init__(self, label, audio_dir, video_res14x14_dir, transform=None, mode_flag="train"):
-        samples = json.load(open("./data/pretrained/avqa-train.json", "r"))
-
-        # nax =  nne
-        ques_vocab = ["<pad>"]
-        ans_vocab = []
-        i = 0
-        for sample in samples:
-            i += 1
-            question = sample["question_content"].rstrip().split(" ")
-            question[-1] = question[-1][:-1]
-
-            p = 0
-            for pos in range(len(question)):
-                if "<" in question[pos]:
-                    question[pos] = ast.literal_eval(sample["templ_values"])[p]
-                    p += 1
-
-            for wd in question:
-                if wd not in ques_vocab:
-                    ques_vocab.append(wd)
-            if sample["anser"] not in ans_vocab:
-                ans_vocab.append(sample["anser"])
-
-        self.ques_vocab = ques_vocab
-        self.ans_vocab = ans_vocab
-        self.word_to_ix = {word: i for i, word in enumerate(self.ques_vocab)}
-
-        self.samples = json.load(open(label, "r"))
-        self.max_len = 14  # question length
-
-        self.audio_dir = audio_dir
-        self.video_res14x14_dir = video_res14x14_dir
-        self.transform = transform
-
-        video_list = []
-        for sample in self.samples:
-            video_name = sample["video_id"]
-            if video_name not in video_list:
-                video_list.append(video_name)
-
-        self.video_list = video_list
-        self.video_len = 60 * len(video_list)
-
 
 
 class OlafBatchInput(Dataset):
