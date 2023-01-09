@@ -594,15 +594,15 @@ def setup_directory() -> None:
         os.makedirs("logs")
 
 
-# if __name__ == "__main__":
-#     """
-#     Olaf main script
-#     """
-log.info("Staring Olaf Application")
-log.info("Setting up directories for Olaf Application")
-setup_directory()
-log.info("Running Olaf main script")
-download_required_files()
-setup_frontend()
-print(os.environ["PATH"])
-main(frontend_dev=False)
+if __name__ == "__main__":
+    """
+    Olaf main script
+    """
+    log.info("Staring Olaf Application")
+    log.info("Setting up directories for Olaf Application")
+    setup_directory()
+    log.info("Running Olaf main script")
+    download_required_files()
+    setup_frontend()
+    print(os.environ["PATH"])
+    main(frontend_dev=False)
