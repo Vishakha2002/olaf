@@ -7,12 +7,12 @@ on:
 
 env:
   SLEEP_1_TIME: 30
-  SLEEP_2_TIME: 30
+  SLEEP_2_TIME: 20
   JOB_1_STEP_1_TIME: 30
-  JOB_1_STEP_2_TIME: 30
-  JOB_2_STEP_1_TIME: 60
-  JOB_2_STEP_2_TIME: 30
-  SLEEP_3_TIME: 30
+  JOB_1_STEP_2_TIME: 20
+  JOB_2_STEP_1_TIME: 30
+  JOB_2_STEP_2_TIME: 20
+  SLEEP_3_TIME: 10
   SLEEP_4_TIME: 30
 
 jobs:
@@ -23,7 +23,7 @@ jobs:
     - name: Sleep for specified time
       uses: jakejarvis/wait-action@master
       with:
-        time: '{{ env.SLEEP_1_TIME }}s'
+        time: ${{ env.SLEEP_1_TIME }}
 
   sleep-2:
     runs-on: ubuntu-latest
@@ -32,7 +32,7 @@ jobs:
     - name: Sleep for specified time
       uses: jakejarvis/wait-action@master
       with:
-        time: '{{ env.SLEEP_2_TIME }}s'
+        time: ${{ env.SLEEP_2_TIME }}
 
   job-1:
     runs-on: ubuntu-latest
@@ -42,12 +42,12 @@ jobs:
     - name: Sleep for specified time
       uses: jakejarvis/wait-action@master
       with:
-        time: '{{ env.JOB_1_STEP_1_TIME }}s'
+        time: ${{ env.JOB_1_STEP_1_TIME }}
 
     - name: Sleep for specified time
       uses: jakejarvis/wait-action@master
       with:
-        time: '{{ env.JOB_1_STEP_2_TIME }}s'
+        time: ${{ env.JOB_1_STEP_2_TIME }}
 
   job-2:
     runs-on: ubuntu-latest
@@ -57,12 +57,12 @@ jobs:
     - name: Sleep for specified time
       uses: jakejarvis/wait-action@master
       with:
-        time: '{{ env.JOB_2_STEP_1_TIME }}s'
+        time: ${{ env.JOB_2_STEP_1_TIME }}
 
     - name: Sleep for specified time
       uses: jakejarvis/wait-action@master
       with:
-        time: '{{ env.JOB_2_STEP_2_TIME }}s'
+        time: ${{ env.JOB_2_STEP_2_TIME }}
 
   sleep-3:
     runs-on: ubuntu-latest
@@ -72,7 +72,7 @@ jobs:
     - name: Sleep for specified time
       uses: jakejarvis/wait-action@master
       with:
-        time: '{{ env.SLEEP_3_TIME }}s'
+        time: ${{ env.SLEEP_3_TIME }}
 
   sleep-4:
     runs-on: ubuntu-latest
@@ -82,4 +82,4 @@ jobs:
     - name: Sleep for specified time
       uses: jakejarvis/wait-action@master
       with:
-        time: '{{ env.SLEEP_4_TIME }}s'
+        time: ${{ env.SLEEP_4_TIME }}
