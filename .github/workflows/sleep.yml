@@ -7,27 +7,78 @@ on:
 
 env:
   SLEEP_1_TIME: 30
-  SLEEP_2_TIME: 30
+  SLEEP_2_TIME: 20
   JOB_1_STEP_1_TIME: 30
-  JOB_1_STEP_2_TIME: 30
-  JOB_2_STEP_1_TIME: 60
-  JOB_2_STEP_2_TIME: 30
-  SLEEP_3_TIME: 30
+  JOB_1_STEP_2_TIME: 20
+  JOB_2_STEP_1_TIME: 30
+  JOB_2_STEP_2_TIME: 20
+  SLEEP_3_TIME: 10
   SLEEP_4_TIME: 30
 
 jobs:
-  sleep-1-2:
-    runs-on: ubuntu-lateststrategy:
-    matrix:
-      parallel: 2
-    fail-fast: false
-    steps:
-    - name: Sleep for {{ sleep-3-time }}
-      uses: jakejarvis/wait-action@master
-      with:
-        time: ${{ env.sleep-3-time }}
+  sleep-1:
+    runs-on: ubuntu-latest
 
-    - name: Sleep for {{ sleep-4-time }}
+    steps:
+    - name: Sleep for specified time
       uses: jakejarvis/wait-action@master
       with:
-        time: ${{ env.sleep-4-time }}
+        time: ${{ env.SLEEP_1_TIME }}
+
+  sleep-2:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Sleep for specified time
+      uses: jakejarvis/wait-action@master
+      with:
+        time: ${{ env.SLEEP_2_TIME }}
+
+  job-1:
+    runs-on: ubuntu-latest
+    needs: [sleep-1, sleep-2]
+
+    steps:
+    - name: Sleep for specified time
+      uses: jakejarvis/wait-action@master
+      with:
+        time: ${{ env.JOB_1_STEP_1_TIME }}
+
+    - name: Sleep for specified time
+      uses: jakejarvis/wait-action@master
+      with:
+        time: ${{ env.JOB_1_STEP_2_TIME }}
+
+  job-2:
+    runs-on: ubuntu-latest
+    needs: [sleep-1, sleep-2]
+
+    steps:
+    - name: Sleep for specified time
+      uses: jakejarvis/wait-action@master
+      with:
+        time: ${{ env.JOB_2_STEP_1_TIME }}
+
+    - name: Sleep for specified time
+      uses: jakejarvis/wait-action@master
+      with:
+        time: ${{ env.JOB_2_STEP_2_TIME }}
+
+  sleep-3:
+    runs-on: ubuntu-latest
+    needs: [job-1, job-2]
+
+    steps:
+    - name: Sleep for specified time
+      uses: jakejarvis/wait-action@master
+      with:
+        time: ${{ env.SLEEP_3_TIME }}
+
+  sleep-4:
+    runs-on: ubuntu-latest
+    needs: [job-1, job-2]
+    steps:
+    - name: Sleep for specified time
+      uses: jakejarvis/wait-action@master
+      with:
+        time: ${{ env.SLEEP_4_TIME }}
