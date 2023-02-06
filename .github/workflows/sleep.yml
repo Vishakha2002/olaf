@@ -5,26 +5,22 @@ on:
     branches:
       - main
 
-env:
-  JOBS: [job-1, job-2]
-  STEP_1_TIME: [30, 40]
-  STEP_2_TIME: [20, 25]
-
 jobs:
   job-1-2:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        job: ${{ env.JOBS }}
-        step_1: ${{ env.STEP_1_TIME }}
-        step_2: ${{ env.STEP_2_TIME }}
+        job: [1, 2]
+        include:
+          - sleep_1: 30
+            sleep_2: 30
     steps:
-    - name: Sleep for specified time
-      uses: jakejarvis/wait-action@master
-      with:
-        time: ${{ env.STEP_1 }}
+      - name: Sleep for specified time
+        uses: jakejarvis/wait-action@master
+        with:
+          time: ${{ matrix.sleep_1 }}
+      - name: Sleep for specified time
+        uses: jakejarvis/wait-action@master
+        with:
+          time: ${{ matrix.sleep_2 }}
 
-    - name: Sleep for specified time
-      uses: jakejarvis/wait-action@master
-      with:
-        time: ${{ env.STEP_2 }}
