@@ -1,0 +1,56 @@
+name: Scale Test Workflow
+
+on:
+  push:
+    branches:
+      - main
+env:
+  SLEEP_1: 30
+  SLEEP_2: 20
+
+jobs:
+  foo-action:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        job: [1, 2]
+        include:
+          - sleep: ${{ env.SLEEP_1 }}
+
+    steps:
+    - name: Sleep to mock foo action
+      uses: jakejarvis/wait-action@master
+      with:
+        time: ${{ matrix.sleep }}
+
+  lid-ekg-mock:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        job: [1, 2]
+        include:
+          - sleep_1: ${{ env.SLEEP_1 }}
+            sleep_2: ${{ env.SLEEP_2 }}
+    steps:
+      - name: Sleep to mock lid
+        uses: jakejarvis/wait-action@master
+        with:
+          time: ${{ matrix.sleep_1 }}
+      - name: Sleep to mock ekg
+        uses: jakejarvis/wait-action@master
+        with:
+          time: ${{ matrix.sleep_2 }}
+  parallel_jobs_2:
+    runs-on: ubuntu-latest
+    needs: [lid-ekg-mock]
+    strategy:
+      matrix:
+        job: [1, 2]
+        include:
+          - sleep: ${{ env.SLEEP_1 }}
+
+    steps:
+    - name: Sleep for specified time
+      uses: jakejarvis/wait-action@master
+      with:
+        time: ${{ matrix.time }}s
