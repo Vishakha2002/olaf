@@ -22,7 +22,7 @@ jobs:
 
   lid-ekg-mock:
     runs-on: ubuntu-latest
-    needs: [foo-action]
+    needs: [parallel_jobs_1]
     strategy:
       matrix:
         job: [1, 2]
